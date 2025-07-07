@@ -5,3 +5,4 @@ func ({{short_sqlcname}} {{ sqlcname }}) Query(query *db.Queries, r context.Cont
         {{ lower_sqlcname }}, err := query.{{ sqlcname }}(r)
         return {{ lower_sqlcname }}, err
 }
+

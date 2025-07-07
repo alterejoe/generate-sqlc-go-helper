@@ -10,8 +10,10 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
-def main(path):
-    files = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(".sql")]
+def main(sqlcpath, outputpath):
+    files = [
+        os.path.join(sqlcpath, f) for f in os.listdir(sqlcpath) if f.endswith(".sql")
+    ]
     sqlc = {}
     for sqlcfile in files:
         if os.path.exists(sqlcfile):
@@ -19,18 +21,19 @@ def main(path):
             assert file is not None
             sqlc.update(file)  ## havent seen this update function before but it works
 
-            logger.info(f"File {sqlcfile} loaded")
+            # logger.info(f"File {sqlcfile} loaded")
         else:
             logger.error(f"File {sqlcfile} does not exist")
 
+    rendered_structs = []
     for queryname in sqlc:
-        print(queryname)
-        renderedparamstruct = Create.create_param_struct(
-            queryname, sqlc[queryname]["params"]
-        )
-        print(renderedparamstruct)
+        rendered_struct = Create.create_param_struct(queryname, sqlc[queryname])
+        rendered_structs.append(rendered_struct)
 
-    Parse.parse_sqla()
+    rendered_file = Create.create_query_file("queries", rendered_structs)
+    # print(rendered_file)
+
+    # Parse.parse_sqla()
 
 
 # type GetLastUpdated struct {
@@ -57,7 +60,10 @@ def main(path):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if len(args) == 0:
-        args = ["./sqlc"]
-    path = args[0]
-    main(path)
+    args = ["./sqlc", "./output"]
+    # if len(args) == 0:
+    #     args = ["./sqlc"]
+
+    sqlcpath = args[0]
+    outputpath = args[1]
+    main(sqlcpath, outputpath)

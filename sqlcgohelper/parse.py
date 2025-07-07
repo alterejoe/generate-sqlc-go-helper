@@ -20,15 +20,47 @@ def parse_sqlc_file(file):
     data = pattern.findall(file)
     queries = {}
     for query in data:
-        print(len(query))
         querydata = {
             "name": query[0],
-            "params": query[1],
+            "sqlc_return": query[1],
+            "sqlc_params": parse_sqlc_query(query[2]),
             "query": query[2],
         }
         queries[querydata["name"]] = querydata
 
     return queries
+
+
+special = ["id"]
+
+
+def sqlc_column_name(column, solo=False):
+    underscore_split = column.split("_")
+    capitalized = []
+
+    for i, word in enumerate(underscore_split):
+        if i == 0 and solo:
+            capitalized.append(word)
+        elif word in special:
+            capitalized.append(word.upper())
+        else:
+            capitalized.append(word.capitalize())
+    word = "".join(capitalized)
+    return word
+
+
+def parse_sqlc_query(query):
+    params = []
+    ## pattern "sqlc.args(paramkey)
+    query = query.replace("sqlc.arg (", "sqlc.arg(")
+    matches = re.findall(r"sqlc.arg\((\w+)\)", query)
+    if len(matches) > 1:
+        for match in matches:
+            params.append(sqlc_column_name(match))
+    elif len(matches) == 1:
+        params.append(sqlc_column_name(matches[0], solo=True))
+
+    return params
 
 
 ## this is to eventually build sqlc queries from tables I've created
