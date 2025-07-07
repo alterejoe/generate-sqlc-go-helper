@@ -1,0 +1,7 @@
+type {{ sqlcname }} struct {
+}
+
+func ({{short_sqlcname}} {{ sqlcname }}) Query(query *db.Queries, r context.Context) (any, error) {
+        {{ lower_sqlcname }}, err := query.{{ sqlcname }}(r)
+        return {{ lower_sqlcname }}, err
+}
