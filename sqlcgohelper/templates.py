@@ -1,6 +1,6 @@
 from jinja2 import Template
 from abc import ABC, abstractmethod
-from sqlcgohelper.conversions import DataConversions
+from sqlcgohelper.conversions import Data
 
 
 class Jinja(ABC):
@@ -23,7 +23,7 @@ class Jinja(ABC):
 
 
 class DBQueryParamTemplate(Jinja):
-    def __init__(self, data: DataConversions):
+    def __init__(self, data: Data):
         super().__init__()
         self.data = data
 
@@ -48,23 +48,24 @@ func ({{ abbv }} {{ name }}) Query(query *db.Queries, r context.Context) (any, e
             "lowererror": self.data.lowererror,
             "queryreturn": self.data.queryreturn,
             "queryparams": self.data.queryparams,
-            # "ifparams": DBQueryIfParamTemplate(self.data).render(),
+            "nilparam": self.data.nilparam,
             "ifparams": (
                 ""
                 if len(self.data._sqlc_params) == 0
-                else DBQueryIfParamTemplate(self.data.abbv).render()
+                else DBQueryIfParamTemplate(self.data.abbv, self.data.nilparam).render()
             ),
             "returnvalue": self.data.returnvalue,
         }
 
 
 class DBQueryIfParamTemplate(Jinja):
-    def __init__(self, abbv):
+    def __init__(self, abbv, param):
         super().__init__()
         self.abbv = abbv
+        self.param = param
 
     def get_template(self):
-        return """if {{ abbv }}.Params == nil {
+        return """if {{ abbv }}.{{ param }}== nil {
     return nil, errors.New("params is nil")
 }
         """
@@ -72,6 +73,7 @@ class DBQueryIfParamTemplate(Jinja):
     def get_params(self):
         return {
             "abbv": self.abbv,
+            "param": self.param,
         }
 
 

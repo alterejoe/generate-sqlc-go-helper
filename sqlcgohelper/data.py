@@ -1,4 +1,7 @@
-class DataConversions:
+from sqlcgohelper._models import Base
+
+
+class Data:
     def __init__(self, functionname, sqlc_return, sqlc_params):
         """
         functionname: str
@@ -19,6 +22,36 @@ class DataConversions:
         self.queryreturn = self.get_queryreturn()
         self.queryparams = self.get_queryparams()
         self.returnvalue = self.get_returnvalue()
+        self.nilparam = self.get_nilparam()
+        self.sqla = self.import_sqla()
+
+    typemap = {
+        "Double": "float64",
+        "Text": "string",
+        "DateTime": "time.Time",
+        "Integer": "int32",
+        "Boolean": "bool",
+    }
+
+    def import_sqla(self):
+        params_to_type = {}
+        unique_types = set()
+        for table in Base.metadata.sorted_tables:
+            columns = {}
+            for column in table.columns:
+                columns[column.name] = column.type
+                unique_types.add(column.type.__class__.__name__)
+            params_to_type[table.name] = columns
+        print("Unique types: ", unique_types)
+        return params_to_type
+
+    def get_nilparam(self):
+        if len(self._sqlc_params) > 1:
+            return "Params"
+        if len(self._sqlc_params) == 0:
+            return ""
+        else:
+            return self._sqlc_capital_params[0]
 
     def get_abbv(self):
         input = self.name
@@ -45,6 +78,8 @@ class DataConversions:
         if len(self._sqlc_params) > 1:
             return f"r, *db.{self.name}Params"
         elif len(self._sqlc_params) == 1:
+            return f"r, {self.get_abbv()}.{self._sqlc_capital_params[0]}"
+        return "r"
 
     def get_queryreturn(self):
         return f"{self.lowername}{self.lowererror}"
