@@ -1,6 +1,6 @@
 from jinja2 import Template
 from abc import ABC, abstractmethod
-from sqlcgohelper.conversions import Data
+from sqlcgohelper.data import Data
 
 
 class Jinja(ABC):

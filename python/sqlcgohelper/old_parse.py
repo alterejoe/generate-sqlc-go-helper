@@ -1,7 +1,4 @@
-import os
 import re
-
-from sqlcgohelper.conversions import Data
 
 
 class ParseSqlcInputFile:
@@ -33,7 +30,7 @@ class ParseSqlcInputFile:
 
 class ParseSqlcOutputQueries:
     def __init__(self, path):
-        if path.endswith("/"):
+        if not path.endswith("/"):
             raise ValueError
         self.path = path
 
@@ -46,7 +43,7 @@ class ParseSqlcOutputQueries:
 
 class ParseSqlcOutputModels:
     def __init__(self, path):
-        if path.endswith("models.go"):
+        if not path.endswith("models.go"):
             raise ValueError
 
         self.path = path

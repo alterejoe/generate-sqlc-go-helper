@@ -15,14 +15,14 @@ class Data:
         ]
 
         self.name = functionname
-        self.structparams = self.get_structparams()
-        self.lowername = self.get_lowername()
-        self.lowererror = self.get_lowererror()
         self.abbv = self.get_abbv()
-        self.queryreturn = self.get_queryreturn()
+        self.lowername = self.get_lowername()
+        self.structparams = self.get_structparams()
         self.queryparams = self.get_queryparams()
-        self.returnvalue = self.get_returnvalue()
+        self.lowererror = self.get_lowererror()
         self.nilparam = self.get_nilparam()
+        self.queryreturn = self.get_queryreturn()
+        self.returnvalue = self.get_returnvalue()
         self.sqla = self.import_sqla()
 
     typemap = {
