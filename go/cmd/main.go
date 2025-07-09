@@ -31,7 +31,6 @@ func main() {
 
 	_ = filepath.WalkDir(paths.Dir, func(path string, d fs.DirEntry, err error) error {
 
-		fmt.Println(path)
 		if strings.HasSuffix(path, "models.go") {
 			m := runner(path, parse_models)
 			models = append(models, m...)

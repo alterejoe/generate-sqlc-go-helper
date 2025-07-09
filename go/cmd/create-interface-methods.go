@@ -6,7 +6,7 @@ import (
 	"github.com/dave/dst"
 )
 
-func CreateQueryMethod(props QueryFunc) []dst.Decl {
+func CreateInterfaceMethod(props FromFunc) []dst.Decl {
 	// Define the receiver
 	receiver := &dst.Field{
 		Names: []*dst.Ident{dst.NewIdent(props.GetAbbv())},

@@ -6,7 +6,7 @@ import (
 	"github.com/dave/dst"
 )
 
-func CreateStruct(props *ParseProps) []dst.Decl {
+func CreateQueryStruct(props FromStruct) []dst.Decl {
 	var fields []*dst.Field
 	if props.StructParams() != nil {
 		fields = append(fields, props.StructParams())
