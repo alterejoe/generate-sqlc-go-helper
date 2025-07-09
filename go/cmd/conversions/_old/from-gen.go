@@ -39,7 +39,7 @@ func (qmp *FromGenDecl) GetReturns() *dst.FieldList {
 	}
 }
 
-func (qmp *FromGenDecl) StructParams() *dst.Field {
+func (qmp *FromGenDecl) GetStructParams() []*dst.Field {
 	if qmp.Input.Tok != token.TYPE {
 		return nil
 	}
@@ -53,18 +53,20 @@ func (qmp *FromGenDecl) StructParams() *dst.Field {
 	qmp.Params = structSpec.Fields
 	if len(qmp.Params.List) > 1 {
 		t := qmp.Params.List[1].Type
-		fmt.Println("StructParams", fmt.Sprint(t))
+
 		if !strings.Contains(fmt.Sprint(t), "Params") {
-			return &dst.Field{
+			return []*dst.Field{{
 				Names: qmp.Params.List[1].Names,
 				Type:  dst.NewIdent(fmt.Sprint("*", t)),
-			}
+			}}
 		} else {
-			field := &dst.Field{
-				Names: []*dst.Ident{dst.NewIdent("Params")},
-				Type:  dst.NewIdent(fmt.Sprint("*db.", t)),
+
+			return []*dst.Field{
+				{
+					Names: []*dst.Ident{dst.NewIdent("Params")},
+					Type:  dst.NewIdent(fmt.Sprint("*db.", t)),
+				},
 			}
-			return field
 		}
 	}
 	return nil

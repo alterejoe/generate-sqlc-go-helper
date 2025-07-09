@@ -13,14 +13,13 @@ func parse_models(n dst.Node) []dst.Decl {
 		if v.Tok != token.TYPE {
 			return nil
 		}
-		conv_gendecl := &conversions.FromGenDecl{
-			Input: v,
-		}
+		conversions.FromStruct(v, "display")
+		// conv_gendecl := conversions.ParseGenDecl(v)
 		// fmt.Println(conv_gendecl.GetName(), "Name")
 		// fmt.Println(conv_gendecl.GetLowerName(), "Lower")
 		// fmt.Println(conv_gendecl.GetReturns(), "Returnsn")
-		s := CreateQueryStruct(conv_gendecl)
-		return s
+		// s := CreateDisplayMethods(conv_gendecl)
+		return nil
 	default:
 		return nil
 	}
@@ -30,15 +29,18 @@ func parse_queries(n dst.Node) []dst.Decl {
 	var decls []dst.Decl
 	switch v := n.(type) {
 	case *dst.FuncDecl:
-		conv_func := &conversions.FromFuncDecl{
-			Input: v,
-		}
+		// conv_func := &conversions.FromFuncDeclQuery{
+		// 	Input: v,
+		// }
+		// conv_func.Initialize()
+		//
+		// s := CreateQueryStruct(conv_func)
+		// m := CreateQueryMethod(conv_func)
+		//
+		// CombineDecls(&decls, &s)
+		// CombineDecls(&decls, &m)
 
-		s := CreateQueryStruct(conv_func)
-		m := CreateQueryMethod(conv_func)
-
-		CombineDecls(&decls, &s)
-		CombineDecls(&decls, &m)
+		conversions.FromFunction(v)
 		return decls
 	default:
 		return nil

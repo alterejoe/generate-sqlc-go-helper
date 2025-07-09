@@ -6,10 +6,18 @@ import (
 	"github.com/dave/dst"
 )
 
+func combineFields(add []*dst.Field, decls []*dst.Field) {
+	for _, decl := range decls {
+		add = append(add, decl)
+	}
+}
+
 func CreateQueryStruct(props FromStruct) []dst.Decl {
 	var fields []*dst.Field
-	if props.StructParams() != nil {
-		fields = append(fields, props.StructParams())
+	if props.GetStructParams() != nil {
+		// fields = append(fields, props.GetStructParams()...)
+		// fields = append(fields, props.GetStructParams())
+		combineFields(fields, props.GetStructParams())
 	}
 
 	newstruct := &dst.TypeSpec{
