@@ -2,7 +2,10 @@ module github.com/alterejoe/generate/sqlc-go-helper
 
 go 1.23.4
 
-require github.com/dave/dst v0.27.3
+require (
+	github.com/dave/dst v0.27.3
+	github.com/joho/godotenv v1.5.1
+)
 
 require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
