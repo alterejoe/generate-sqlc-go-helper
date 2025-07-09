@@ -11,6 +11,6 @@ import (
 
 // toType enum
 
-func FromFunction(v *dst.FuncDecl) {
+func ToFunction(v *dst.FuncDecl) {
 	fmt.Println("Function")
 }

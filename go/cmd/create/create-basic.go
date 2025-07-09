@@ -1,8 +1,9 @@
-package main
+package create
 
 import (
 	"go/token"
 
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/interfaces"
 	"github.com/dave/dst"
 )
 
@@ -12,11 +13,9 @@ func combineFields(add []*dst.Field, decls []*dst.Field) {
 	}
 }
 
-func CreateQueryStruct(props FromStruct) []dst.Decl {
+func QueryStruct(props interfaces.Struct) []dst.Decl {
 	var fields []*dst.Field
 	if props.GetStructParams() != nil {
-		// fields = append(fields, props.GetStructParams()...)
-		// fields = append(fields, props.GetStructParams())
 		combineFields(fields, props.GetStructParams())
 	}
 

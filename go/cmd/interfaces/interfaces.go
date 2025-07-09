@@ -30,9 +30,11 @@ import "github.com/dave/dst"
 // }
 
 type Standard interface {
+	GetName() string
 	GetAbbv() string
 }
 
 type Struct interface {
+	Standard
 	GetStructParams() []*dst.Field
 }

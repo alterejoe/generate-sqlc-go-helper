@@ -2,6 +2,7 @@ package conversions
 
 import (
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/data"
+	dstto "github.com/alterejoe/generate/sqlc-go-helper/cmd/dst-to"
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/interfaces"
 	"github.com/dave/dst"
 )
@@ -11,16 +12,28 @@ import (
 
 // toType enum
 
-func FromStruct(v *dst.GenDecl, t string) interfaces.Struct {
-	_ = &data.StandardData{
+func ToStruct(v *dst.GenDecl, t string) interfaces.Struct {
+	sd := &data.StandardData{
 		Name: GetName(v),
+	}
+
+	genTo := &dstto.GenTo{GenDecl: v}
+	st, err := genTo.ToStructType()
+	if err != nil {
+		panic(err)
 	}
 
 	switch t {
 	case "display":
-		return &data.StructData_Display{}
+		return &data.StructData_Display{
+			StandardData: *sd,
+			Params:       st.Fields,
+		}
 	case "query":
-		return &data.StructData_Query{}
+		return &data.StructData_Query{
+			StandardData: *sd,
+			Params:       st.Fields,
+		}
 	default:
 		panic("Incorrect string type for structType(t string)")
 	}

@@ -11,9 +11,13 @@ type StandardData struct {
 	Name string
 }
 
+func (sd *StandardData) GetName() string {
+	return sd.Name
+}
+
 func (sd *StandardData) GetAbbv() string {
 	abbv := ""
-	for _, c := range sd.Name {
+	for _, c := range sd.GetName() {
 		if rune('A') <= c && c <= rune('Z') {
 			abbv += string(c)
 		}
@@ -28,6 +32,8 @@ type StructData_Query struct {
 }
 
 func (sd *StructData_Query) GetStructParams() []*dst.Field {
+
+	fmt.Println(sd.Params.List)
 	if len(sd.Params.List) > 1 {
 		t := sd.Params.List[1].Type
 		if !strings.Contains(fmt.Sprint(t), "Params") {
@@ -55,5 +61,6 @@ type StructData_Display struct {
 }
 
 func (sd *StructData_Display) GetStructParams() []*dst.Field {
+	fmt.Println(sd.Params)
 	return []*dst.Field{}
 }

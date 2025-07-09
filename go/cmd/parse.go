@@ -4,6 +4,7 @@ import (
 	"go/token"
 
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/conversions"
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/create"
 	"github.com/dave/dst"
 )
 
@@ -13,13 +14,12 @@ func parse_models(n dst.Node) []dst.Decl {
 		if v.Tok != token.TYPE {
 			return nil
 		}
-		conversions.FromStruct(v, "display")
+		structdata := conversions.ToStruct(v, "query")
 		// conv_gendecl := conversions.ParseGenDecl(v)
 		// fmt.Println(conv_gendecl.GetName(), "Name")
 		// fmt.Println(conv_gendecl.GetLowerName(), "Lower")
 		// fmt.Println(conv_gendecl.GetReturns(), "Returnsn")
-		// s := CreateDisplayMethods(conv_gendecl)
-		return nil
+		return create.QueryStruct(structdata)
 	default:
 		return nil
 	}
@@ -40,7 +40,7 @@ func parse_queries(n dst.Node) []dst.Decl {
 		// CombineDecls(&decls, &s)
 		// CombineDecls(&decls, &m)
 
-		conversions.FromFunction(v)
+		conversions.ToFunction(v)
 		return decls
 	default:
 		return nil
