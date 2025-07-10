@@ -3,7 +3,7 @@ package main
 import (
 	"go/token"
 
-	"github.com/alterejoe/generate/sqlc-go-helper/cmd/conversions"
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/data"
 	"github.com/dave/dst"
 )
 
@@ -23,8 +23,12 @@ func parse_models(n dst.Node) []dst.Decl {
 		if v.Tok != token.TYPE {
 			return nil
 		}
-		structdata := conversions.GenToStruct(v, QUERY)
-		return []dst.Decl{structdata.ToFunction()}
+		// structdata := conversions.GenToStruct(v, QUERY)
+		// //model to display function
+		gen := &data.FunctionGenerator{
+			ModelDisplayFunction: data.ModelDisplayFunction{},
+		}
+		return []dst.Decl{gen.Generate()}
 	default:
 		return nil
 	}

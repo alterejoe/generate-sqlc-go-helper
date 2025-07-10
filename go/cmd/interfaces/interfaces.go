@@ -38,7 +38,6 @@ type Standard interface {
 type Struct interface {
 	Standard
 	GetStructParams() []*dst.Field
-	GenerateFunction
 }
 
 type Function interface {
@@ -46,12 +45,5 @@ type Function interface {
 	GetBody() *dst.BlockStmt
 	GetFunctionType() *dst.FuncType
 	GetReceiver() *dst.FieldList
-}
-
-type GenerateFunction interface {
-	ToFunction() *dst.FuncDecl
-}
-
-type GenerateStruct interface {
-	ToStruct() *dst.GenDecl
+	GetResults() *dst.FieldList
 }

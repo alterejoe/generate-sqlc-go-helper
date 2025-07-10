@@ -35,8 +35,8 @@ func main() {
 			m := runner(path, parse_models)
 			models = append(models, m...)
 		} else if strings.HasSuffix(path, ".sql.go") {
-			q := runner(path, parse_queries)
-			queries = append(queries, q...)
+			// q := runner(path, parse_queries)
+			// queries = append(queries, q...)
 		}
 		return nil
 	})

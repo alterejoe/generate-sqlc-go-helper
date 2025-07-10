@@ -36,11 +36,6 @@ func (sd *StructData_Query) GetStructParams() []*dst.Field {
 	}
 }
 
-func (sd *StructData_Query) ToFunction() *dst.FuncDecl {
-
-	return &dst.FuncDecl{}
-}
-
 type StructData_Display struct {
 	StructData
 }
