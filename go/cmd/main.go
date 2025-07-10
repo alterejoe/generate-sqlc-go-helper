@@ -54,11 +54,11 @@ func main() {
 		Name:  dst.NewIdent("models"),
 		Decls: models,
 	}
-
 	if err := decorator.Fprint(os.Stdout, modelsfile); err != nil {
 		fmt.Println(err)
 		return
 	}
+
 }
 
 func addImports(file *dst.File, imports []string) {

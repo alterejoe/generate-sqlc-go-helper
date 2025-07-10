@@ -12,9 +12,9 @@ import (
 
 // toType enum
 
-func ToStruct(v *dst.GenDecl, t string) interfaces.Struct {
+func GenToStruct(v *dst.GenDecl, t string) interfaces.Struct {
 	sd := &data.StandardData{
-		Name: GetName(v),
+		Name: GetGenName(v),
 	}
 
 	genTo := &dstto.GenTo{GenDecl: v}
@@ -26,20 +26,24 @@ func ToStruct(v *dst.GenDecl, t string) interfaces.Struct {
 	switch t {
 	case "display":
 		return &data.StructData_Display{
-			StandardData: *sd,
-			Params:       st.Fields,
+			StructData: data.StructData{
+				Params:       st.Fields,
+				StandardData: *sd,
+			},
 		}
 	case "query":
 		return &data.StructData_Query{
-			StandardData: *sd,
-			Params:       st.Fields,
+			StructData: data.StructData{
+				Params:       st.Fields,
+				StandardData: *sd,
+			},
 		}
 	default:
 		panic("Incorrect string type for structType(t string)")
 	}
 }
 
-func GetName(v *dst.GenDecl) string {
+func GetGenName(v *dst.GenDecl) string {
 	for _, spec := range v.Specs {
 		switch s := spec.(type) {
 		case *dst.TypeSpec:

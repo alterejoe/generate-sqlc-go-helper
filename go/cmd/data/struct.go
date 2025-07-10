@@ -7,60 +7,45 @@ import (
 	"github.com/dave/dst"
 )
 
-type StandardData struct {
-	Name string
-}
-
-func (sd *StandardData) GetName() string {
-	return sd.Name
-}
-
-func (sd *StandardData) GetAbbv() string {
-	abbv := ""
-	for _, c := range sd.GetName() {
-		if rune('A') <= c && c <= rune('Z') {
-			abbv += string(c)
-		}
-	}
-	s := strings.ToLower(abbv)
-	return s
+type StructData struct {
+	Params *dst.FieldList
+	StandardData
 }
 
 type StructData_Query struct {
-	Params *dst.FieldList
-	StandardData
+	StructData
 }
 
 func (sd *StructData_Query) GetStructParams() []*dst.Field {
 
-	fmt.Println(sd.Params.List)
-	if len(sd.Params.List) > 1 {
-		t := sd.Params.List[1].Type
-		if !strings.Contains(fmt.Sprint(t), "Params") {
-			return []*dst.Field{
-				{
-					Names: sd.Params.List[1].Names,
-					Type:  dst.NewIdent(fmt.Sprint("*", t)),
-				},
-			}
-		} else {
-			return []*dst.Field{
-				{
-					Names: []*dst.Ident{dst.NewIdent("Params")},
-					Type:  dst.NewIdent(fmt.Sprint("*db.", t)),
-				},
-			}
+	t := sd.Params.List[1].Type
+	if !strings.Contains(fmt.Sprint(t), "Params") {
+		return []*dst.Field{
+			{
+				Names: sd.Params.List[1].Names,
+				Type:  dst.NewIdent(fmt.Sprint("*", t)),
+			},
+		}
+	} else {
+		return []*dst.Field{
+			{
+				Names: []*dst.Ident{dst.NewIdent("Params")},
+				Type:  dst.NewIdent(fmt.Sprint("*db.", t)),
+			},
 		}
 	}
-	return nil
+}
+
+func (sd *StructData_Query) ToFunction() *dst.FuncDecl {
+
+	return &dst.FuncDecl{}
 }
 
 type StructData_Display struct {
-	Params *dst.FieldList
-	StandardData
+	StructData
 }
 
 func (sd *StructData_Display) GetStructParams() []*dst.Field {
-	fmt.Println(sd.Params)
+	fmt.Printf("sd.Params: %v\n", sd.Params)
 	return []*dst.Field{}
 }
