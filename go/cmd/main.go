@@ -1,55 +1,19 @@
 package main
 
 import (
-	"fmt"
-	"go/parser"
-	"go/token"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/parse"
 	"github.com/dave/dst"
-	"github.com/dave/dst/decorator"
 	"github.com/joho/godotenv"
 )
 
 type Paths struct {
 	Dir    string
 	WinDir string
-}
-
-func displayFile(decls []dst.Decl, imports []string) {
-	queriesfile := dst.File{
-		Name:  dst.NewIdent("queries"),
-		Decls: decls,
-	}
-	// output to std
-	if err := decorator.Fprint(os.Stdout, &queriesfile); err != nil {
-		fmt.Println(err)
-	}
-}
-func writeToFile(file *dst.File, filename string) {
-	// Create the file
-	f, err := os.Create(filename)
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
-	}
-	defer f.Close()
-
-	// Write to the file
-	if err := decorator.Fprint(f, file); err != nil {
-		fmt.Println("Error writing to file:", err)
-		return
-	}
-
-	// Format the file using gofmt
-	cmd := exec.Command("gofmt", "-w", filename)
-	if err := cmd.Run(); err != nil {
-		fmt.Println("Error formatting file:", err)
-	}
 }
 
 func main() {
@@ -65,18 +29,18 @@ func main() {
 	_ = filepath.WalkDir(paths.Dir, func(path string, d fs.DirEntry, err error) error {
 
 		if strings.HasSuffix(path, "models.go") {
-			m := runner(path, parse_models)
+			m := runner(path, parse.ParseModels)
 			models = append(models, m...)
 		} else if strings.HasSuffix(path, ".sql.go") {
-			q := runner(path, parse_queries)
+			q := runner(path, parse.ParseQueries)
 			queries = append(queries, q...)
 		}
 		return nil
 	})
 
-	displayFile(queries, []string{"context", "github.com/alterejoe/budget/db"})
-	displayFile(models, []string{"context", "github.com/alterejoe/budget/db"})
-	//
+	displayFile(queries)
+	displayFile(models)
+
 	imports := []string{
 		"context",
 		"github.com/alterejoe/budget/db",
@@ -88,39 +52,4 @@ func main() {
 	addImports(&queriesfile, imports)
 	writeToFile(&queriesfile, "../../../budget/web-budget/web/internal/queries/generated.go")
 	// writeToFile(&dst.File{Name: dst.NewIdent("models"), Decls: models}, "models.go")
-}
-
-func addImports(file *dst.File, imports []string) {
-	for _, imp := range imports {
-		importSpec := &dst.ImportSpec{
-			Path: &dst.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf("%q", imp),
-			},
-		}
-		importDecl := &dst.GenDecl{
-			Tok: token.IMPORT,
-			Specs: []dst.Spec{
-				importSpec,
-			},
-		}
-		file.Decls = append([]dst.Decl{importDecl}, file.Decls...)
-	}
-}
-
-func runner(path string, inspector func(dst.Node) []dst.Decl) []dst.Decl {
-	fset := token.NewFileSet()
-	f, err := decorator.ParseFile(fset, path, nil, parser.AllErrors)
-	if err != nil {
-		panic(err)
-	}
-
-	var decls []dst.Decl
-	dst.Inspect(f, func(n dst.Node) bool {
-		d := inspector(n)
-		decls = append(decls, d...)
-		return true
-	})
-
-	return decls
 }

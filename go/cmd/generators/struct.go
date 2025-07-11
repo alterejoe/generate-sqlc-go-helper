@@ -7,16 +7,11 @@ import (
 	"github.com/dave/dst"
 )
 
-type Gen_StructGenerator struct {
-	Gen *dst.GenDecl
-	interfaces.Struct
-}
-
-func (sqs *Gen_StructGenerator) Generate() *dst.GenDecl {
+func StructGenerate(s interfaces.DisplayStruct) *dst.GenDecl {
 	return &dst.GenDecl{
 		Tok: token.TYPE,
 		Specs: []dst.Spec{
-			sqs.GetTypeSpec(),
+			s.GetTypeSpec(),
 		},
 	}
 }

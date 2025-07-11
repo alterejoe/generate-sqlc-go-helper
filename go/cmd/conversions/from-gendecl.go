@@ -1,7 +1,6 @@
 package conversions
 
 import (
-	"github.com/alterejoe/generate/sqlc-go-helper/cmd/display"
 	dstto "github.com/alterejoe/generate/sqlc-go-helper/cmd/dst-to"
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/interfaces"
 	"github.com/dave/dst"

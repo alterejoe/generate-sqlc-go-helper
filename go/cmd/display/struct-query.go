@@ -1,14 +1,17 @@
-package data
+package display
 
-import "github.com/dave/dst"
+import (
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/parse"
+	"github.com/dave/dst"
+)
 
-type Sqlcquery_QueryStruct struct {
+type TemplateSqlcquery_QStruct struct {
 	Name   string
 	Fields []*dst.Field
-	StandardData
+	parse.StandardData
 }
 
-func (sqqs *Sqlcquery_QueryStruct) GetTypespec() *dst.TypeSpec {
+func (sqqs *TemplateSqlcquery_QStruct) GetTypespec() *dst.TypeSpec {
 	return &dst.TypeSpec{
 		Name: dst.NewIdent(sqqs.Name),
 		Type: &dst.StructType{
@@ -19,10 +22,10 @@ func (sqqs *Sqlcquery_QueryStruct) GetTypespec() *dst.TypeSpec {
 	}
 }
 
-func (sqqs *Sqlcquery_QueryStruct) GetStructFields() []*dst.Field {
+func (sqqs *TemplateSqlcquery_QStruct) GetStructFields() []*dst.Field {
 	return sqqs.Fields
 }
 
-func (sqqs *Sqlcquery_QueryStruct) GetStandardData() StandardData {
+func (sqqs *TemplateSqlcquery_QStruct) GetStandardData() parse.StandardData {
 	return sqqs.StandardData
 }
