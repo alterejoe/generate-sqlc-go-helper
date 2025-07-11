@@ -8,6 +8,19 @@ import (
 	"github.com/dave/dst"
 )
 
+// / come back to this if you get lost again
+// using this factory style function we can pass parameters to children
+// this makes it easier to sort and delegate data to its respective parser
+func FuncToQueryFunction(f *dst.FuncDecl) *Funcdecl_toQueryFunction {
+	fd_ts := &Funcdecl_toQueryFunction{
+		Funcdecl: f,
+		StandardData: &StandardData{
+			Name: f.Name.String(),
+		},
+	}
+	return fd_ts
+}
+
 type Funcdecl_toQueryFunction struct {
 	Funcdecl *dst.FuncDecl
 	*StandardData
@@ -122,17 +135,4 @@ func (qmp *Funcdecl_toQueryFunction) GenerateQuery() *dst.AssignStmt {
 			},
 		},
 	}
-}
-
-// / come back to this if you get lost again
-// using this factory style function we can pass parameters to children
-// this makes it easier to sort and delegate data to its respective parser
-func FuncToQueryFunction(f *dst.FuncDecl) *Funcdecl_toQueryFunction {
-	fd_ts := &Funcdecl_toQueryFunction{
-		Funcdecl: f,
-		StandardData: &StandardData{
-			Name: f.Name.String(),
-		},
-	}
-	return fd_ts
 }

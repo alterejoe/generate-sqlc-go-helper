@@ -14,7 +14,7 @@ func (gt *GenTo) ToTypeSpec() (*dst.TypeSpec, error) {
 	}
 	ts, ok := gt.Specs[0].(*dst.TypeSpec)
 	if !ok {
-		return nil, fmt.Errorf("gt.Specs[0].(*dst.TypeSpec)")
+		return nil, fmt.Errorf("Length of gt.Specs is not 1:", len(gt.Specs))
 	}
 
 	return ts, nil

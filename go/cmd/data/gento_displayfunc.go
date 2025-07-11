@@ -1,0 +1,138 @@
+package data
+
+import (
+	"fmt"
+	"go/token"
+	"strings"
+
+	"github.com/dave/dst"
+)
+
+// / come back to this if you get lost again
+// using this factory style function we can pass parameters to children
+// this makes it easier to sort and delegate data to its respective parser
+func FieldToDisplayFunction(field string, f *dst.GenDecl) *Gendecl_toDisplayFunction {
+	fd_ts := &Gendecl_toDisplayFunction{
+		Gendecl: f,
+		StandardData: &StandardData{
+			Name: field,
+		},
+	}
+	return fd_ts
+}
+
+type Gendecl_toDisplayFunction struct {
+	Gendecl *dst.GenDecl
+	*StandardData
+}
+
+func (qmp *Gendecl_toDisplayFunction) GetParams() []*dst.Field {
+	return []*dst.Field{}
+}
+
+func (qmp *Gendecl_toDisplayFunction) GetReturns() []*dst.Field {
+	return []*dst.Field{}
+}
+
+func (qmp *Gendecl_toDisplayFunction) GetQueryResults() []dst.Expr {
+	switch len(qmp.GetReturns()) {
+	case 2:
+
+		return []dst.Expr{
+			dst.NewIdent("results"),
+			dst.NewIdent("err"),
+		}
+	default:
+
+		return []dst.Expr{
+			dst.NewIdent("err"),
+		}
+	}
+}
+
+func (qmp *Gendecl_toDisplayFunction) GetReceiver() *dst.FieldList {
+	return &dst.FieldList{
+		List: []*dst.Field{
+			{
+				Names: []*dst.Ident{dst.NewIdent(qmp.GetAbbv())},
+				Type:  dst.NewIdent(fmt.Sprint(qmp.GetName())),
+			},
+		},
+	}
+}
+
+func (qmp *Gendecl_toDisplayFunction) GetFunctionParams() *dst.FieldList {
+	return &dst.FieldList{
+		List: []*dst.Field{
+			{
+				Names: []*dst.Ident{dst.NewIdent("query")},
+				Type:  dst.NewIdent("*db.Queries"),
+			},
+			{
+				Names: []*dst.Ident{dst.NewIdent("r")},
+				Type:  dst.NewIdent("context.Context"),
+			},
+		},
+	}
+}
+
+func (qmp *Gendecl_toDisplayFunction) GetResults() *dst.FieldList {
+	return &dst.FieldList{
+		List: []*dst.Field{
+			{Type: dst.NewIdent("any")},
+			{Type: dst.NewIdent("error")},
+		},
+	}
+}
+
+func (qmp *Gendecl_toDisplayFunction) GetBody() *dst.BlockStmt {
+	return &dst.BlockStmt{
+		List: []dst.Stmt{ // this is basically the function body
+			// other stuff can go here
+			qmp.GenerateQuery(), // this is a function call within the body
+			&dst.ReturnStmt{ // this is a return statement to the body
+				Results: qmp.GetQueryResults(),
+			},
+		},
+	}
+}
+
+func (qmp *Gendecl_toDisplayFunction) GetQueryArgs() []dst.Expr {
+	switch len(qmp.GetParams()) {
+	case 2:
+		secondarg := qmp.GetParams()[1]
+		if strings.Contains(fmt.Sprint(secondarg.Type), "Params") {
+			return []dst.Expr{
+				dst.NewIdent("r"),
+				dst.NewIdent(fmt.Sprint(qmp.GetAbbv(), ".Params")),
+			}
+		} else {
+			return []dst.Expr{
+				dst.NewIdent("r"),
+				dst.NewIdent(fmt.Sprint(qmp.GetAbbv(), ".", secondarg.Names[0].Name)),
+			}
+		}
+	default:
+		return []dst.Expr{
+			dst.NewIdent("r"),
+		}
+	}
+
+}
+
+// /// internal database query
+func (qmp *Gendecl_toDisplayFunction) GenerateQuery() *dst.AssignStmt {
+	return &dst.AssignStmt{
+		Lhs: qmp.GetQueryResults(),
+		Tok: token.DEFINE,
+		Rhs: []dst.Expr{
+			&dst.CallExpr{
+				Fun: &dst.SelectorExpr{
+					X:   dst.NewIdent(QUERY_PACKAGE),
+					Sel: dst.NewIdent(qmp.GetName()),
+				},
+				Args: qmp.GetQueryArgs(),
+			},
+		},
+	}
+}

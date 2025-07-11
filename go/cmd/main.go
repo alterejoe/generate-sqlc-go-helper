@@ -38,7 +38,7 @@ func main() {
 		return nil
 	})
 
-	displayFile(queries)
+	// displayFile(queries)
 	displayFile(models)
 
 	imports := []string{
@@ -50,6 +50,6 @@ func main() {
 		Decls: queries,
 	}
 	addImports(&queriesfile, imports)
-	writeToFile(&queriesfile, "../../../budget/web-budget/web/internal/queries/generated.go")
+	// writeToFile(&queriesfile, "../../../budget/web-budget/web/internal/queries/generated.go")
 	// writeToFile(&dst.File{Name: dst.NewIdent("models"), Decls: models}, "models.go")
 }

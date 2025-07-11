@@ -7,6 +7,19 @@ import (
 	"github.com/dave/dst"
 )
 
+// / come back to this if you get lost again
+// using this factory style function we can pass parameters to children
+// this makes it easier to sort and delegate data to its respective parser
+func FuncToQueryStruct(f *dst.FuncDecl) *Funcdecl_toQueryStruct {
+	fd_ts := &Funcdecl_toQueryStruct{
+		Funcdecl: f,
+		StandardData: &StandardData{
+			Name: f.Name.String(),
+		},
+	}
+	return fd_ts
+}
+
 type Funcdecl_toQueryStruct struct {
 	Funcdecl *dst.FuncDecl
 	*StandardData
@@ -45,17 +58,4 @@ func (sqqs *Funcdecl_toQueryStruct) GetStructFields() []*dst.Field {
 	default:
 		return []*dst.Field{}
 	}
-}
-
-// / come back to this if you get lost again
-// using this factory style function we can pass parameters to children
-// this makes it easier to sort and delegate data to its respective parser
-func FuncToQueryStruct(f *dst.FuncDecl) *Funcdecl_toQueryStruct {
-	fd_ts := &Funcdecl_toQueryStruct{
-		Funcdecl: f,
-		StandardData: &StandardData{
-			Name: f.Name.String(),
-		},
-	}
-	return fd_ts
 }
