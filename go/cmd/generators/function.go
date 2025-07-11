@@ -8,7 +8,7 @@ import (
 func FunctionGenerate(f interfaces.DisplayFunction) *dst.FuncDecl {
 	return &dst.FuncDecl{
 		Recv: f.GetReceiver(),
-		Name: dst.NewIdent("Query"),
+		Name: dst.NewIdent(f.GetFunctionName()),
 		Type: &dst.FuncType{
 			Params:  f.GetFunctionParams(),
 			Results: f.GetResults(),

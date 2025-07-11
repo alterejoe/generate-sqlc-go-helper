@@ -32,6 +32,7 @@ type DisplayStruct interface {
 
 type DisplayFunction interface {
 	Function // to provide data to the template
+	GetFunctionName() string
 	GetReceiver() *dst.FieldList
 	GetFunctionParams() *dst.FieldList
 	GetResults() *dst.FieldList

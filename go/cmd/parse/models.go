@@ -18,15 +18,25 @@ func ParseModels(n dst.Node) []dst.Decl {
 		}
 
 		genTo := dstto.GenTo{GenDecl: v}
+		ts, err := genTo.ToTypeSpec()
+		if err != nil {
+			fmt.Println(err)
+			panic(err)
+		}
 		st, err := genTo.ToStructType()
 		if err != nil {
 			fmt.Println(err)
 			panic(err)
 		}
-		fields := st.Fields
+		fields := st.Fields.List
 		decls := []dst.Decl{}
-		for _, f := range fields.List {
-			if funcdata := data.FieldToDisplayFunction(f.Names[0].Name, v); funcdata != nil {
+		for _, f := range fields {
+			props := &data.GenToDisplayFunctionProps{
+				Name:    ts.Name.String(),
+				Field:   f.Names[0].String(),
+				Gendecl: v,
+			}
+			if funcdata := data.GenToDisplayFunction(props); funcdata != nil {
 				funcgen := generators.FunctionGenerate(funcdata)
 				decls = append(decls, funcgen)
 			}

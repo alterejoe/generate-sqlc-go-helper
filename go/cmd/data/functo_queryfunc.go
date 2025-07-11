@@ -34,6 +34,10 @@ func (qmp *Funcdecl_toQueryFunction) GetReturns() []*dst.Field {
 	return qmp.Funcdecl.Type.Results.List
 }
 
+func (qmp *Funcdecl_toQueryFunction) GetFunctionName() string {
+	return qmp.GetName()
+}
+
 func (qmp *Funcdecl_toQueryFunction) GetQueryResults() []dst.Expr {
 	switch len(qmp.GetReturns()) {
 	case 2:

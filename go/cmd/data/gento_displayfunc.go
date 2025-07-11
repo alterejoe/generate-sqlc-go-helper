@@ -2,7 +2,6 @@ package data
 
 import (
 	"fmt"
-	"go/token"
 	"strings"
 
 	"github.com/dave/dst"
@@ -11,11 +10,18 @@ import (
 // / come back to this if you get lost again
 // using this factory style function we can pass parameters to children
 // this makes it easier to sort and delegate data to its respective parser
-func FieldToDisplayFunction(field string, f *dst.GenDecl) *Gendecl_toDisplayFunction {
+type GenToDisplayFunctionProps struct {
+	Name    string
+	Field   string
+	Gendecl *dst.GenDecl
+}
+
+func GenToDisplayFunction(props *GenToDisplayFunctionProps) *Gendecl_toDisplayFunction {
 	fd_ts := &Gendecl_toDisplayFunction{
-		Gendecl: f,
+		Gendecl: props.Gendecl,
+		Field:   props.Field,
 		StandardData: &StandardData{
-			Name: field,
+			Name: props.Name,
 		},
 	}
 	return fd_ts
@@ -23,6 +29,7 @@ func FieldToDisplayFunction(field string, f *dst.GenDecl) *Gendecl_toDisplayFunc
 
 type Gendecl_toDisplayFunction struct {
 	Gendecl *dst.GenDecl
+	Field   string
 	*StandardData
 }
 
@@ -55,7 +62,7 @@ func (qmp *Gendecl_toDisplayFunction) GetReceiver() *dst.FieldList {
 		List: []*dst.Field{
 			{
 				Names: []*dst.Ident{dst.NewIdent(qmp.GetAbbv())},
-				Type:  dst.NewIdent(fmt.Sprint(qmp.GetName())),
+				Type:  dst.NewIdent(fmt.Sprint("*" + qmp.GetName())),
 			},
 		},
 	}
@@ -63,16 +70,7 @@ func (qmp *Gendecl_toDisplayFunction) GetReceiver() *dst.FieldList {
 
 func (qmp *Gendecl_toDisplayFunction) GetFunctionParams() *dst.FieldList {
 	return &dst.FieldList{
-		List: []*dst.Field{
-			{
-				Names: []*dst.Ident{dst.NewIdent("query")},
-				Type:  dst.NewIdent("*db.Queries"),
-			},
-			{
-				Names: []*dst.Ident{dst.NewIdent("r")},
-				Type:  dst.NewIdent("context.Context"),
-			},
-		},
+		List: []*dst.Field{},
 	}
 }
 
@@ -89,7 +87,6 @@ func (qmp *Gendecl_toDisplayFunction) GetBody() *dst.BlockStmt {
 	return &dst.BlockStmt{
 		List: []dst.Stmt{ // this is basically the function body
 			// other stuff can go here
-			qmp.GenerateQuery(), // this is a function call within the body
 			&dst.ReturnStmt{ // this is a return statement to the body
 				Results: qmp.GetQueryResults(),
 			},
@@ -120,19 +117,6 @@ func (qmp *Gendecl_toDisplayFunction) GetQueryArgs() []dst.Expr {
 
 }
 
-// /// internal database query
-func (qmp *Gendecl_toDisplayFunction) GenerateQuery() *dst.AssignStmt {
-	return &dst.AssignStmt{
-		Lhs: qmp.GetQueryResults(),
-		Tok: token.DEFINE,
-		Rhs: []dst.Expr{
-			&dst.CallExpr{
-				Fun: &dst.SelectorExpr{
-					X:   dst.NewIdent(QUERY_PACKAGE),
-					Sel: dst.NewIdent(qmp.GetName()),
-				},
-				Args: qmp.GetQueryArgs(),
-			},
-		},
-	}
+func (qmp *Gendecl_toDisplayFunction) GetFunctionName() string {
+	return "Get" + qmp.Field
 }
