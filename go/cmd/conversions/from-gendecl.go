@@ -1,7 +1,7 @@
 package conversions
 
 import (
-	"github.com/alterejoe/generate/sqlc-go-helper/cmd/data"
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/display"
 	dstto "github.com/alterejoe/generate/sqlc-go-helper/cmd/dst-to"
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/interfaces"
 	"github.com/dave/dst"
@@ -12,7 +12,7 @@ import (
 
 // toType enum
 
-func GenToStruct(v *dst.GenDecl, t string) interfaces.Struct {
+func GendeclToStruct(v *dst.GenDecl, t string) interfaces.Struct {
 	sd := &data.StandardData{
 		Name: GetGenName(v),
 	}
@@ -27,14 +27,14 @@ func GenToStruct(v *dst.GenDecl, t string) interfaces.Struct {
 	case "display":
 		return &data.StructData_Display{
 			StructData: data.StructData{
-				Params:       st.Fields,
+				Fields:       st.Fields,
 				StandardData: *sd,
 			},
 		}
 	case "query":
 		return &data.StructData_Query{
 			StructData: data.StructData{
-				Params:       st.Fields,
+				Fields:       st.Fields,
 				StandardData: *sd,
 			},
 		}
@@ -52,4 +52,36 @@ func GetGenName(v *dst.GenDecl) string {
 		}
 	}
 	return ""
+}
+
+func GendeclToFunction(v *dst.GenDecl, t string) interfaces.Function {
+	// sd := &data.StandardData{
+	// 	Name: GetGenName(v),
+	// }
+	//
+	// genTo := &dstto.GenTo{GenDecl: v}
+	// st, err := genTo.ToStructType()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	//
+	// switch t {
+	// case "display":
+	// 	return &data.StructData_Display{
+	// 		StructData: data.StructData{
+	// 			Params:       st.Fields,
+	// 			StandardData: *sd,
+	// 		},
+	// 	}
+	// case "query":
+	// 	return &data.StructData_Query{
+	// 		StructData: data.StructData{
+	// 			Params:       st.Fields,
+	// 			StandardData: *sd,
+	// 		},
+	// 	}
+	// default:
+	// 	panic("Incorrect string type for structType(t string)")
+	// }
+	return nil
 }

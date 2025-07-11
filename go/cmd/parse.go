@@ -3,7 +3,8 @@ package main
 import (
 	"go/token"
 
-	"github.com/alterejoe/generate/sqlc-go-helper/cmd/data"
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/conversions"
+	data "github.com/alterejoe/generate/sqlc-go-helper/cmd/display"
 	"github.com/dave/dst"
 )
 
@@ -23,38 +24,47 @@ func parse_models(n dst.Node) []dst.Decl {
 		if v.Tok != token.TYPE {
 			return nil
 		}
-		// structdata := conversions.GenToStruct(v, QUERY)
+
+		// structdata := conversions.GendeclToStruct(v, DISPLAY)
+
 		// //model to display function
-		gen := &data.FunctionGenerator{
-			ModelDisplayFunction: data.ModelDisplayFunction{},
+		funcgen := &data.FunctionGenerator{
+			Function: &data.Modelgo_DisplayFunction{},
 		}
-		return []dst.Decl{gen.Generate()}
+		return []dst.Decl{
+			funcgen.Generate(),
+		}
 	default:
 		return nil
 	}
 }
 
-// func parse_queries(n dst.Node) []dst.Decl {
-// 	var decls []dst.Decl
-// 	switch v := n.(type) {
-// 	case *dst.FuncDecl:
-// 		// conv_func := &conversions.FromFuncDeclQuery{
-// 		// 	Input: v,
-// 		// }
-// 		// conv_func.Initialize()
-// 		//
-// 		// s := CreateQueryStruct(conv_func)
-// 		// m := CreateQueryMethod(conv_func)
-// 		//
-// 		// CombineDecls(&decls, &s)
-// 		// CombineDecls(&decls, &m)
-//
-// 		conversions.ToFunction(v)
-// 		return decls
-// 	default:
-// 		return nil
-// 	}
-// }
+func parse_queries(n dst.Node) []dst.Decl {
+	// var decls []dst.Decl
+	switch v := n.(type) {
+	case *dst.FuncDecl:
+		structdata := conversions.FuncdeclToStruct(v, QUERY)
+		funcdata := conversions.FuncdeclToFunction(v, QUERY)
+
+		structgen := &data.StructGenerator{
+			Sqlcquery_QueryStruct: data.Sqlcquery_QueryStruct{
+				Name:   structdata.GetName(),
+				Fields: structdata.GetStructParams(),
+			},
+		}
+
+		funcgen := &data.FunctionGenerator{
+
+			Function: funcdata,
+		}
+		return []dst.Decl{
+			structgen.Generate(),
+			funcgen.Generate(),
+		}
+	default:
+		return nil
+	}
+}
 
 func CombineDecls(add *[]dst.Decl, decls *[]dst.Decl) {
 	for _, decl := range *decls {

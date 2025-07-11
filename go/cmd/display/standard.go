@@ -26,3 +26,7 @@ func (sd *StandardData) GetAbbv() string {
 func (sd *StandardData) GetLowerName() string {
 	return strings.ToLower(sd.GetName())
 }
+
+func (sd *StandardData) GetStandardStruct() *StandardData {
+	return sd
+}

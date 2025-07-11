@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -17,6 +18,38 @@ import (
 type Paths struct {
 	Dir    string
 	WinDir string
+}
+
+func displayFile(decls []dst.Decl, imports []string) {
+	queriesfile := dst.File{
+		Name:  dst.NewIdent("queries"),
+		Decls: decls,
+	}
+	// output to std
+	if err := decorator.Fprint(os.Stdout, &queriesfile); err != nil {
+		fmt.Println(err)
+	}
+}
+func writeToFile(file *dst.File, filename string) {
+	// Create the file
+	f, err := os.Create(filename)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer f.Close()
+
+	// Write to the file
+	if err := decorator.Fprint(f, file); err != nil {
+		fmt.Println("Error writing to file:", err)
+		return
+	}
+
+	// Format the file using gofmt
+	cmd := exec.Command("gofmt", "-w", filename)
+	if err := cmd.Run(); err != nil {
+		fmt.Println("Error formatting file:", err)
+	}
 }
 
 func main() {
@@ -35,30 +68,26 @@ func main() {
 			m := runner(path, parse_models)
 			models = append(models, m...)
 		} else if strings.HasSuffix(path, ".sql.go") {
-			// q := runner(path, parse_queries)
-			// queries = append(queries, q...)
+			q := runner(path, parse_queries)
+			queries = append(queries, q...)
 		}
 		return nil
 	})
-	queriesfile := &dst.File{
+
+	displayFile(queries, []string{"context", "github.com/alterejoe/budget/db"})
+	displayFile(models, []string{"context", "github.com/alterejoe/budget/db"})
+	//
+	imports := []string{
+		"context",
+		"github.com/alterejoe/budget/db",
+		"github.com/alterejoe/budget/web/internal/queries"}
+	queriesfile := dst.File{
 		Name:  dst.NewIdent("queries"),
 		Decls: queries,
 	}
-	addImports(queriesfile, []string{"context", "github.com/alterejoe/budget/db"})
-	// output to std
-	if err := decorator.Fprint(os.Stdout, queriesfile); err != nil {
-		fmt.Println(err)
-		return
-	}
-	modelsfile := &dst.File{
-		Name:  dst.NewIdent("models"),
-		Decls: models,
-	}
-	if err := decorator.Fprint(os.Stdout, modelsfile); err != nil {
-		fmt.Println(err)
-		return
-	}
-
+	addImports(&queriesfile, imports)
+	writeToFile(&queriesfile, "../../../budget/web-budget/web/internal/queries/generated.go")
+	// writeToFile(&dst.File{Name: dst.NewIdent("models"), Decls: models}, "models.go")
 }
 
 func addImports(file *dst.File, imports []string) {

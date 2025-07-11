@@ -37,13 +37,14 @@ type Standard interface {
 
 type Struct interface {
 	Standard
+	GetTypeSpec() *dst.TypeSpec
 	GetStructParams() []*dst.Field
 }
 
 type Function interface {
 	Standard
-	GetBody() *dst.BlockStmt
-	GetFunctionType() *dst.FuncType
 	GetReceiver() *dst.FieldList
+	GetFunctionParams() *dst.FieldList
 	GetResults() *dst.FieldList
+	GetBody() *dst.BlockStmt
 }
