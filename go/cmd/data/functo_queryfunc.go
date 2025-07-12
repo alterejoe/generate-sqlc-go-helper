@@ -34,8 +34,8 @@ func (qmp *Funcdecl_toQueryFunction) GetReturns() []*dst.Field {
 	return qmp.Funcdecl.Type.Results.List
 }
 
-func (qmp *Funcdecl_toQueryFunction) GetFunctionName() string {
-	return qmp.GetName()
+func (qmp *Funcdecl_toQueryFunction) GetGenerateFunctionName() string {
+	return "Query"
 }
 
 func (qmp *Funcdecl_toQueryFunction) GetQueryResults() []dst.Expr {
@@ -54,7 +54,7 @@ func (qmp *Funcdecl_toQueryFunction) GetQueryResults() []dst.Expr {
 	}
 }
 
-func (qmp *Funcdecl_toQueryFunction) GetReceiver() *dst.FieldList {
+func (qmp *Funcdecl_toQueryFunction) GetGenerateReceiver() *dst.FieldList {
 	return &dst.FieldList{
 		List: []*dst.Field{
 			{
@@ -65,7 +65,7 @@ func (qmp *Funcdecl_toQueryFunction) GetReceiver() *dst.FieldList {
 	}
 }
 
-func (qmp *Funcdecl_toQueryFunction) GetFunctionParams() *dst.FieldList {
+func (qmp *Funcdecl_toQueryFunction) GetGenerateFunctionParams() *dst.FieldList {
 	return &dst.FieldList{
 		List: []*dst.Field{
 			{
@@ -80,12 +80,30 @@ func (qmp *Funcdecl_toQueryFunction) GetFunctionParams() *dst.FieldList {
 	}
 }
 
-func (qmp *Funcdecl_toQueryFunction) GetResults() *dst.FieldList {
+func (qmp *Funcdecl_toQueryFunction) GetGenerateResults() *dst.FieldList {
 	return &dst.FieldList{
 		List: []*dst.Field{
 			{Type: dst.NewIdent("any")},
 			{Type: dst.NewIdent("error")},
 		},
+	}
+}
+
+func (qmp *Funcdecl_toQueryFunction) GetFunctionReturn() []dst.Expr {
+
+	switch len(qmp.GetReturns()) {
+	case 2:
+
+		return []dst.Expr{
+			dst.NewIdent("results"),
+			dst.NewIdent("err"),
+		}
+	default:
+
+		return []dst.Expr{
+			dst.NewIdent("nil"),
+			dst.NewIdent("err"),
+		}
 	}
 }
 
@@ -95,7 +113,7 @@ func (qmp *Funcdecl_toQueryFunction) GetBody() *dst.BlockStmt {
 			// other stuff can go here
 			qmp.GenerateQuery(), // this is a function call within the body
 			&dst.ReturnStmt{ // this is a return statement to the body
-				Results: qmp.GetQueryResults(),
+				Results: qmp.GetFunctionReturn(),
 			},
 		},
 	}

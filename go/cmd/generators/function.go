@@ -7,11 +7,11 @@ import (
 
 func FunctionGenerate(f interfaces.DisplayFunction) *dst.FuncDecl {
 	return &dst.FuncDecl{
-		Recv: f.GetReceiver(),
-		Name: dst.NewIdent(f.GetFunctionName()),
+		Recv: f.GetGenerateReceiver(),
+		Name: dst.NewIdent(f.GetGenerateFunctionName()),
 		Type: &dst.FuncType{
-			Params:  f.GetFunctionParams(),
-			Results: f.GetResults(),
+			Params:  f.GetGenerateFunctionParams(),
+			Results: f.GetGenerateResults(),
 		},
 		Body: f.GetBody(),
 	}
