@@ -43,3 +43,26 @@ type DisplayFunction interface {
 	GetGenerateResults() *dst.FieldList
 	GetBody() *dst.BlockStmt
 }
+
+type SqlcSelect interface {
+	Standard
+	GetSelect() string
+	GetIdentifier() string
+	GetFrom() string
+	GetWhere() string
+	GetOrderBy() string
+	GetLimit() string
+	GetReturns() string
+}
+
+type SqlcInsert interface {
+	GetInsert() string
+}
+
+type SqlcUpdate interface {
+	GetUpdate() string
+}
+
+type SqlcDelete interface {
+	GetDelete() string
+}

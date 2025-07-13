@@ -34,6 +34,23 @@ func writeToFile(file *dst.File, filename string) {
 	}
 }
 
+func strRunner(path string, logger *slog.Logger, inspector func(dst.Node, *slog.Logger) []string) []string {
+	fset := token.NewFileSet()
+	f, err := decorator.ParseFile(fset, path, nil, parser.AllErrors)
+	if err != nil {
+		panic(err)
+	}
+
+	var decls []string
+	dst.Inspect(f, func(n dst.Node) bool {
+		d := inspector(n, logger)
+		decls = append(decls, d...)
+		return true
+	})
+
+	return decls
+}
+
 func runner(path string, logger *slog.Logger, inspector func(dst.Node, *slog.Logger) []dst.Decl) []dst.Decl {
 	fset := token.NewFileSet()
 	f, err := decorator.ParseFile(fset, path, nil, parser.AllErrors)
