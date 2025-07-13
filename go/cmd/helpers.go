@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/parser"
 	"go/token"
+	"log/slog"
 	"os"
 	"os/exec"
 
@@ -33,18 +34,7 @@ func writeToFile(file *dst.File, filename string) {
 	}
 }
 
-func displayFile(decls []dst.Decl) {
-	queriesfile := dst.File{
-		Name:  dst.NewIdent("queries"),
-		Decls: decls,
-	}
-	// output to std
-	if err := decorator.Fprint(os.Stdout, &queriesfile); err != nil {
-		fmt.Println(err)
-	}
-}
-
-func runner(path string, inspector func(dst.Node) []dst.Decl) []dst.Decl {
+func runner(path string, logger *slog.Logger, inspector func(dst.Node, *slog.Logger) []dst.Decl) []dst.Decl {
 	fset := token.NewFileSet()
 	f, err := decorator.ParseFile(fset, path, nil, parser.AllErrors)
 	if err != nil {
@@ -53,7 +43,7 @@ func runner(path string, inspector func(dst.Node) []dst.Decl) []dst.Decl {
 
 	var decls []dst.Decl
 	dst.Inspect(f, func(n dst.Node) bool {
-		d := inspector(n)
+		d := inspector(n, logger)
 		decls = append(decls, d...)
 		return true
 	})

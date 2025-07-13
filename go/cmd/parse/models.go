@@ -3,6 +3,7 @@ package parse
 import (
 	"fmt"
 	"go/token"
+	"log/slog"
 
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/data"
 	dstto "github.com/alterejoe/generate/sqlc-go-helper/cmd/dst-to"
@@ -13,14 +14,14 @@ import (
 func GenText(t dst.Expr) bool {
 	// switch v := fmt.Sprintf(t.Type), v {
 	switch v := fmt.Sprintf("%s", t); v {
-	case "&{pgtype Text {{None [] [] None} []}}", "string":
+	case "&{pgtype Text {{None [] [] None} []}}", "string", "&{<nil> bool {{None [] [] None} [] []}}", "&{<nil> string {{None [] [] None} [] []}}":
 		return false
 	default:
 		return true
 	}
 }
 
-func ParseModels(n dst.Node) []dst.Decl {
+func ParseModels(n dst.Node, logger *slog.Logger) []dst.Decl {
 	switch v := n.(type) {
 	case *dst.GenDecl:
 		if v.Tok != token.TYPE {
@@ -30,8 +31,8 @@ func ParseModels(n dst.Node) []dst.Decl {
 		genTo := dstto.GenTo{GenDecl: v}
 		ts, err := genTo.ToTypeSpec()
 		if err != nil {
-			fmt.Println(err)
-			panic(err)
+			// fmt.Println(err)
+			// panic(err)
 		}
 		st, err := genTo.ToStructType()
 		if err != nil {
@@ -47,6 +48,7 @@ func ParseModels(n dst.Node) []dst.Decl {
 				Gendecl:    v,
 				TypeSpec:   ts,
 				StructSpec: st,
+				Logger:     logger,
 			}
 			if funcdata := data.GenToDisplayFunction(props); funcdata != nil {
 				funcgen := generators.FunctionGenerate(funcdata)

@@ -2,12 +2,14 @@ package main
 
 import (
 	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/parse"
 	"github.com/dave/dst"
+	"github.com/golang-cz/devslog"
 	"github.com/joho/godotenv"
 )
 
@@ -18,26 +20,47 @@ type Paths struct {
 
 func main() {
 	// source
+
+	slogOpts := &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelDebug,
+	}
+	opts := &devslog.Options{
+		HandlerOptions:    slogOpts,
+		MaxSlicePrintSize: 10,
+		SortKeys:          true,
+		NewLineAfterLog:   true,
+		StringerFormatter: true,
+		NoColor:           true,
+	}
+	handler := devslog.NewHandler(os.Stdout, opts)
+	logger := slog.New(handler)
+
 	godotenv.Load()
 	paths := Paths{
 		Dir: os.Getenv("SQLCDIR"),
 	}
 
-	var queries []dst.Decl
-	var models []dst.Decl
+	var dbqueries []dst.Decl
+	var querys_displayfunctions []dst.Decl
+	var model_displayfunctions []dst.Decl
 
 	_ = filepath.WalkDir(paths.Dir, func(path string, d fs.DirEntry, err error) error {
 
-		if strings.HasSuffix(path, "models.go") || strings.HasSuffix(path, ".sql.go") {
-			m := runner(path, parse.ParseModels)
-			models = append(models, m...)
+		if strings.HasSuffix(path, "models.go") {
+			m := runner(path, logger, parse.ParseModels)
+			model_displayfunctions = append(model_displayfunctions, m...)
 		} else if strings.HasSuffix(path, ".sql.go") {
-			q := runner(path, parse.ParseQueries)
+			qm := runner(path, logger, parse.ParseModels)
+			querys_displayfunctions = append(querys_displayfunctions, qm...)
+		}
+		if strings.HasSuffix(path, ".sql.go") {
+			q := runner(path, logger, parse.ParseQueries)
 			// will need to parse structs related to queries as well
 			// for display purposes
 			// each struct ex: GerFirstAccountRow related to a query
 			// need the display functions to be attached not just the original models.go
-			queries = append(queries, q...)
+			dbqueries = append(dbqueries, q...)
 		}
 		return nil
 	})
@@ -45,25 +68,33 @@ func main() {
 	// displayFile(queries)
 	// displayFile(models)
 	//
-	queriesimports := []string{
+	db_imports := []string{
 		"context",
 		"github.com/alterejoe/budget/db",
 	}
-	queriesfile := dst.File{
+	db_queries_file := dst.File{
 		Name:  dst.NewIdent("queries"),
-		Decls: queries,
+		Decls: dbqueries,
 	}
-	modelsimports := []string{
+	model_df_imports := []string{
 		"fmt",
 		"time",
 	}
-	modelsfile := dst.File{
+	model_df_file := dst.File{
 		Name:  dst.NewIdent("db"),
-		Decls: models,
+		Decls: model_displayfunctions,
 	}
-	addImports(&queriesfile, queriesimports)
-	addImports(&modelsfile, modelsimports)
-	writeToFile(&queriesfile, "../../../budget/web-budget/web/internal/queries/generated.go")
-	writeToFile(&modelsfile, "../../../budget/web-budget/web/db/generated.go")
+
+	query_df_file := dst.File{
+		Name:  dst.NewIdent("db"),
+		Decls: querys_displayfunctions,
+	}
+
+	addImports(&db_queries_file, db_imports)
+	addImports(&model_df_file, model_df_imports)
+	addImports(&query_df_file, model_df_imports)
+	writeToFile(&db_queries_file, "../../../budget/web-budget/web/internal/queries/generated.go")
+	writeToFile(&query_df_file, "../../../budget/web-budget/web/db/generated-queries.go")
+	writeToFile(&model_df_file, "../../../budget/web-budget/web/db/generated-models.go")
 	// writeToFile(&dst.File{Name: dst.NewIdent("models"), Decls: models}, "models.go")
 }

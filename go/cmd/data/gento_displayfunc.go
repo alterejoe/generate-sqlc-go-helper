@@ -2,6 +2,8 @@ package data
 
 import (
 	"fmt"
+	"go/token"
+	"log/slog"
 	"strings"
 
 	"github.com/dave/dst"
@@ -16,6 +18,7 @@ type GenToDisplayFunctionProps struct {
 	Gendecl    *dst.GenDecl
 	TypeSpec   *dst.TypeSpec
 	StructSpec *dst.StructType
+	Logger     *slog.Logger
 }
 
 func GenToDisplayFunction(props *GenToDisplayFunctionProps) *Gendecl_toDisplayFunction {
@@ -24,7 +27,8 @@ func GenToDisplayFunction(props *GenToDisplayFunctionProps) *Gendecl_toDisplayFu
 		Field:    props.Field,
 		TypeSpec: props.TypeSpec,
 		StandardData: &StandardData{
-			Name: props.Name,
+			Name:   props.Name,
+			Logger: props.Logger,
 		},
 	}
 	return fd_ts
@@ -37,26 +41,51 @@ type Gendecl_toDisplayFunction struct {
 	*StandardData
 }
 
-// dst.NewIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + ".Time"),
+// // dst.NewIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + ".Time"),
 func (qmp *Gendecl_toDisplayFunction) ParamIdent(param string) *dst.Ident {
 	return dst.NewIdent(param)
 }
 
-func (qmp *Gendecl_toDisplayFunction) PgSubparam(param string) string {
+func (qmp *Gendecl_toDisplayFunction) PreidentInt(param string) string {
+	return fmt.Sprint("int(", param, ")")
+}
+
+func (qmp *Gendecl_toDisplayFunction) PreidentPgfield(param string) string {
+	return fmt.Sprint(qmp.GetAbbv(), ".", param)
+}
+
+func (qmp *Gendecl_toDisplayFunction) PreidentPgsubparam(param string) string {
 	return fmt.Sprint(qmp.GetAbbv(), ".", qmp.GetFieldName(), ".", param)
 }
 
-func (qmp *Gendecl_toDisplayFunction) PgSubparamIdent(param string) *dst.Ident {
-	return dst.NewIdent(qmp.PgSubparam(param))
+func (qmp *Gendecl_toDisplayFunction) Ident(param string) *dst.Ident {
+	return dst.NewIdent(fmt.Sprint(param))
 }
 
-func (qmp *Gendecl_toDisplayFunction) PgParam() string {
-	return fmt.Sprint(qmp.GetAbbv(), ".", qmp.GetFieldName())
-}
-
-func (qmp *Gendecl_toDisplayFunction) PgParamIdent() *dst.Ident {
-	return dst.NewIdent(qmp.PgParam())
-}
+//
+// func (qmp *Gendecl_toDisplayFunction) PgSubparam(param string) string {
+// 	return fmt.Sprint(qmp.GetAbbv(), ".", qmp.GetFieldName(), ".", param)
+// }
+//
+// func (qmp *Gendecl_toDisplayFunction) PgSubparamIdentInt(param string) *dst.Ident {
+// 	return dst.NewIdent("int(" + qmp.PgSubparam(param) + ")")
+// }
+//
+// func (qmp *Gendecl_toDisplayFunction) PgSubparamIdent(param string) *dst.Ident {
+// 	return dst.NewIdent(qmp.PgSubparam(param))
+// }
+//
+// func (qmp *Gendecl_toDisplayFunction) PgParam() string {
+// 	return fmt.Sprint(qmp.GetAbbv(), ".", qmp.GetFieldName())
+// }
+//
+// func (qmp *Gendecl_toDisplayFunction) PgParamIdent() *dst.Ident {
+// 	return dst.NewIdent(qmp.PgParam())
+// }
+//
+// func (qmp *Gendecl_toDisplayFunction) PgParamIdent() *dst.Ident {
+// 	return dst.NewIdent(qmp.PgParam())
+// }
 
 func (qmp *Gendecl_toDisplayFunction) GetParams() []*dst.Field {
 	return []*dst.Field{}
@@ -97,14 +126,14 @@ func (qmp *Gendecl_toDisplayFunction) GetGenerateResults() *dst.FieldList {
 	case "int64":
 		return &dst.FieldList{
 			List: []*dst.Field{
-				{Type: dst.NewIdent("int64")},
+				{Type: dst.NewIdent("int")},
 			},
 		}
 	case "int32":
 
 		return &dst.FieldList{
 			List: []*dst.Field{
-				{Type: dst.NewIdent("int32")},
+				{Type: dst.NewIdent("int")},
 			},
 		}
 	case "bool":
@@ -122,7 +151,7 @@ func (qmp *Gendecl_toDisplayFunction) GetGenerateResults() *dst.FieldList {
 	case "&{pgtype Int4 {{None [] [] None} []}}":
 		return &dst.FieldList{
 			List: []*dst.Field{
-				{Type: dst.NewIdent("int32")},
+				{Type: dst.NewIdent("int")},
 			},
 		}
 	case "&{pgtype Float8 {{None [] [] None} []}}":
@@ -158,25 +187,25 @@ func (qmp *Gendecl_toDisplayFunction) GetGenerateResults() *dst.FieldList {
 	case "&{<nil> string {{None [] [] None} [] []}}":
 		return &dst.FieldList{
 			List: []*dst.Field{
-				{Type: dst.NewIdent("string")},
+				{Type: dst.NewIdent("[]string")},
 			},
 		}
 	case "&{<nil> float64 {{None [] [] None} [] []}}":
 		return &dst.FieldList{
 			List: []*dst.Field{
-				{Type: dst.NewIdent("float64")},
+				{Type: dst.NewIdent("[]float64")},
 			},
 		}
 	case "&{<nil> int32 {{None [] [] None} [] []}}":
 		return &dst.FieldList{
 			List: []*dst.Field{
-				{Type: dst.NewIdent("int32")},
+				{Type: dst.NewIdent("[]int")},
 			},
 		}
 	case "&{<nil> bool {{None [] [] None} [] []}}":
 		return &dst.FieldList{
 			List: []*dst.Field{
-				{Type: dst.NewIdent("bool")},
+				{Type: dst.NewIdent("[]bool")},
 			},
 		}
 	default:
@@ -235,11 +264,50 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversionReturn() *dst.ReturnStmt 
 				qmp.ParamIdent("[]byte{}"),
 			},
 		}
-	}
-	return &dst.ReturnStmt{
-		Results: []dst.Expr{
-			// starexpr
-		},
+	case "&{<nil> string {{None [] [] None} [] []}}":
+		return &dst.ReturnStmt{
+			Results: []dst.Expr{
+				qmp.ParamIdent("[]string{}"),
+			},
+		}
+	case "&{<nil> float64 {{None [] [] None} [] []}}":
+		return &dst.ReturnStmt{
+			Results: []dst.Expr{
+				qmp.ParamIdent("[]float64{}"),
+			},
+		}
+	case "&{<nil> int32 {{None [] [] None} [] []}}":
+		return &dst.ReturnStmt{
+			Results: []dst.Expr{
+				qmp.ParamIdent("[]int{}"),
+			},
+		}
+	case "&{<nil> bool {{None [] [] None} [] []}}":
+		return &dst.ReturnStmt{
+			Results: []dst.Expr{
+				qmp.ParamIdent("[]bool{}"),
+			},
+		}
+	// case "&{<nil> string {{None [] [] None} [] []}}":
+	// 	return &dst.ReturnStmt{
+	// 		Results: []dst.Expr{
+	// 			qmp.ParamIdent("[]string{}"),
+	// 		},
+	// 	}
+	//
+	default:
+		fmt.Println("GetTypeConversionReturn: Type not found: ", qmp.Field.Type)
+		return &dst.ReturnStmt{
+			Results: []dst.Expr{
+				qmp.ParamIdent("\"\""),
+			},
+		}
+		// default:
+		// 	return &dst.ReturnStmt{
+		// 		Results: []dst.Expr{
+		// 			qmp.Field.Type,
+		// 		},
+		// 	}
 	}
 }
 
@@ -249,24 +317,35 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 
 	nilResults := qmp.GetTypeConversionReturn()
 	switch v := fmt.Sprint(qmp.Field.Type); v {
-	case "bool", "int64", "int32", "string":
+	case "bool", "string":
 		conversion = &dst.ReturnStmt{
 			Results: []dst.Expr{
-				// qmp.ParamIdent(qmp.GetAbbv() + "." + qmp.Field.Names[0].Name),
-				qmp.PgParamIdent(),
+				qmp.Ident(qmp.PreidentPgfield(qmp.GetFieldName())),
 			},
 		}
 		results = []dst.Stmt{
 			conversion,
 		}
+	case "int64", "int32":
+		conversion = &dst.ReturnStmt{
+			Results: []dst.Expr{
+				qmp.Ident(qmp.PreidentInt(qmp.PreidentPgfield(qmp.GetFieldName()))),
+			},
+		}
+
+		results = []dst.Stmt{
+			conversion,
+		}
 	case "&{pgtype Text {{None [] [] None} []}}":
 		conversion = &dst.IfStmt{
-			Cond: qmp.PgSubparamIdent("Valid"),
+			// Cond: qmp.PgSubparamIdent("Valid"),
+			Cond: qmp.Ident(qmp.PreidentPgsubparam("Valid")),
 			Body: &dst.BlockStmt{
 				List: []dst.Stmt{
 					&dst.ReturnStmt{
 						Results: []dst.Expr{
-							qmp.PgSubparamIdent("String"),
+							// qmp.PgSubparamIdent("String"),
+							qmp.Ident(qmp.PreidentPgsubparam("String")),
 						},
 					},
 				},
@@ -278,12 +357,15 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 		}
 	case "&{pgtype Float8 {{None [] [] None} []}}":
 		conversion = &dst.IfStmt{
-			Cond: qmp.PgSubparamIdent("Valid"),
+			// Cond: qmp.PgSubparamIdent("Valid"),
+			Cond: qmp.Ident(qmp.PreidentPgsubparam("Valid")),
 			Body: &dst.BlockStmt{
 				List: []dst.Stmt{
 					&dst.ReturnStmt{
 						Results: []dst.Expr{
-							qmp.PgSubparamIdent("Float64")},
+							// qmp.PgSubparamIdent("Float64")},
+							qmp.Ident(qmp.PreidentPgsubparam("Float64")),
+						},
 					},
 				},
 			},
@@ -294,12 +376,14 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 		}
 	case "&{pgtype Int4 {{None [] [] None} []}}":
 		conversion = &dst.IfStmt{
-			Cond: qmp.PgSubparamIdent("Valid"),
+			// Cond: qmp.PgSubparamIdent("Valid"),
+			Cond: qmp.Ident(qmp.PreidentPgsubparam("Valid")),
 			Body: &dst.BlockStmt{
 				List: []dst.Stmt{
 					&dst.ReturnStmt{
 						Results: []dst.Expr{
-							qmp.PgSubparamIdent("Int32"),
+							// qmp.PgSubparamIdentInt("Int32"),
+							qmp.Ident(qmp.PreidentInt(qmp.PreidentPgsubparam("Int32"))),
 						},
 					},
 				},
@@ -312,12 +396,14 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 		}
 	case "&{pgtype Bool {{None [] [] None} []}}":
 		conversion = &dst.IfStmt{
-			Cond: qmp.PgSubparamIdent("Valid"),
+			// Cond: qmp.PgSubparamIdent("Valid"),
+			Cond: qmp.Ident(qmp.PreidentPgsubparam("Valid")),
 			Body: &dst.BlockStmt{
 				List: []dst.Stmt{
 					&dst.ReturnStmt{
 						Results: []dst.Expr{
-							qmp.PgSubparamIdent("Bool"),
+							// qmp.PgSubparamIdent("Bool"),
+							qmp.Ident(qmp.PreidentPgsubparam("Bool")),
 						},
 					},
 				},
@@ -330,12 +416,14 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 		}
 	case "&{<nil> byte {{None [] [] None} [] []}}":
 		conversion = &dst.IfStmt{
-			Cond: qmp.ParamIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + " != nil"),
+			// Cond: qmp.ParamIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + " != nil"),
+			Cond: qmp.Ident(qmp.PreidentPgfield(qmp.GetFieldName()) + " != nil"),
 			Body: &dst.BlockStmt{
 				List: []dst.Stmt{
 					&dst.ReturnStmt{
 						Results: []dst.Expr{
-							qmp.PgParamIdent(),
+							// qmp.PgParamIdent(),
+							qmp.Ident(qmp.PreidentPgfield(qmp.GetFieldName())),
 						},
 					},
 				},
@@ -348,12 +436,14 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 		}
 	case "&{pgtype Timestamp {{None [] [] None} []}}", "&{pgtype Timestamptz {{None [] [] None} []}}":
 		conversion = &dst.IfStmt{
-			Cond: qmp.PgSubparamIdent("Valid"),
+			// Cond: qmp.PgSubparamIdent("Valid"),
+			Cond: qmp.Ident(qmp.PreidentPgsubparam("Valid")),
 			Body: &dst.BlockStmt{
 				List: []dst.Stmt{
 					&dst.ReturnStmt{
 						Results: []dst.Expr{
-							qmp.PgSubparamIdent("Time"),
+							// qmp.PgSubparamIdent("Time"),
+							qmp.Ident(qmp.PreidentPgsubparam("Time")),
 						},
 					},
 				},
@@ -364,14 +454,49 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 			conversion,
 			nilResults,
 		}
-	case "&{<nil> string {{None [] [] None} [] []}}", "&{<nil> float64 {{None [] [] None} [] []}}", "&{<nil> int32 {{None [] [] None} [] []}}", "&{<nil> bool {{None [] [] None} [] []}}":
+	case "&{<nil> int32 {{None [] [] None} [] []}}", "&{<nil> int64 {{None [] [] None} [] []}}":
+		conversion = &dst.IfStmt{
+			Cond: qmp.ParamIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + " != nil"),
+			Body: &dst.BlockStmt{
+				List: []dst.Stmt{
+					//var lowerFieldName returnType
+					&dst.DeclStmt{
+						Decl: &dst.GenDecl{
+							Tok: token.VAR,
+							Specs: []dst.Spec{
+								&dst.ValueSpec{
+									Names: []*dst.Ident{
+										qmp.Ident(strings.ToLower(qmp.GetFieldName())),
+									},
+									Type: qmp.GetGenerateResults().List[0].Type,
+								},
+							},
+						},
+					},
+					&dst.ReturnStmt{
+						Results: []dst.Expr{
+							// qmp.PgParamIdent(),
+							qmp.Ident(strings.ToLower(qmp.GetFieldName())),
+						},
+					},
+				},
+			},
+		}
+
+		results = []dst.Stmt{
+			conversion,
+			nilResults,
+		}
+
+	case "&{<nil> string {{None [] [] None} [] []}}", "&{<nil> float64 {{None [] [] None} [] []}}", "&{<nil> bool {{None [] [] None} [] []}}":
 		conversion = &dst.IfStmt{
 			Cond: qmp.ParamIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + " != nil"),
 			Body: &dst.BlockStmt{
 				List: []dst.Stmt{
 					&dst.ReturnStmt{
 						Results: []dst.Expr{
-							qmp.PgParamIdent(),
+							// qmp.PgParamIdent(),
+							qmp.Ident(qmp.PreidentPgfield(qmp.GetFieldName())),
 						},
 					},
 				},

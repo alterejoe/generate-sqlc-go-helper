@@ -1,12 +1,14 @@
 package parse
 
 import (
+	"log/slog"
+
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/data"
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/generators"
 	"github.com/dave/dst"
 )
 
-func ParseQueries(n dst.Node) []dst.Decl {
+func ParseQueries(n dst.Node, logger *slog.Logger) []dst.Decl {
 	switch v := n.(type) {
 	case *dst.FuncDecl:
 		//output:

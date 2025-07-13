@@ -17,7 +17,8 @@ func GenToDisplayTextFunction(props *GenToDisplayFunctionProps) *Gendecl_toDispl
 		Field:    props.Field,
 		TypeSpec: props.TypeSpec,
 		StandardData: &StandardData{
-			Name: props.Name,
+			Name:   props.Name,
+			Logger: props.Logger,
 		},
 	}
 	return fd_ts
@@ -181,24 +182,6 @@ func (qmp *Gendecl_toDisplayTextFunction) GetTypeConversion() []dst.Stmt {
 			conversion,
 			nilResults,
 		}
-	case "&{<nil> byte {{None [] [] None} [] []}}":
-		conversion = &dst.IfStmt{
-			Cond: qmp.StandardIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + " != nil"),
-			Body: &dst.BlockStmt{
-				List: []dst.Stmt{
-					&dst.ReturnStmt{
-						Results: []dst.Expr{
-							dst.NewIdent("string(" + qmp.GetAbbv() + "." + qmp.GetFieldName() + ")"),
-						},
-					},
-				},
-			},
-		}
-
-		results = []dst.Stmt{
-			conversion,
-			nilResults,
-		}
 	case "&{pgtype Timestamp {{None [] [] None} []}}", "&{pgtype Timestamptz {{None [] [] None} []}}":
 		conversion = &dst.IfStmt{
 			Cond: qmp.StandardPgIdent("Valid"),
@@ -219,7 +202,20 @@ func (qmp *Gendecl_toDisplayTextFunction) GetTypeConversion() []dst.Stmt {
 		}
 
 	///  come back here
-	case "&{<nil> string {{None [] [] None} [] []}}", "&{<nil> float64 {{None [] [] None} [] []}}", "&{<nil> int32 {{None [] [] None} [] []}}", "&{<nil> bool {{None [] [] None} [] []}}":
+	case "&{<nil> bool {{None [] [] None} [] []}}":
+		conversion = &dst.IfStmt{
+			Cond: qmp.StandardIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + " != nil"),
+			Body: &dst.BlockStmt{
+				List: []dst.Stmt{
+					&dst.ReturnStmt{
+						Results: []dst.Expr{
+							dst.NewIdent("string(" + qmp.GetAbbv() + "." + qmp.GetFieldName() + ")"),
+						},
+					},
+				},
+			},
+		}
+	case "&{<nil> byte {{None [] [] None} [] []}}":
 		conversion = &dst.IfStmt{
 			Cond: qmp.StandardIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + " != nil"),
 			Body: &dst.BlockStmt{
@@ -238,9 +234,30 @@ func (qmp *Gendecl_toDisplayTextFunction) GetTypeConversion() []dst.Stmt {
 			nilResults,
 		}
 
+	case "&{<nil> string {{None [] [] None} [] []}}", "&{<nil> float64 {{None [] [] None} [] []}}", "&{<nil> int32 {{None [] [] None} [] []}}":
+		conversion = &dst.IfStmt{
+			Cond: qmp.StandardIdent(qmp.GetAbbv() + "." + qmp.GetFieldName() + " != nil"),
+			Body: &dst.BlockStmt{
+				List: []dst.Stmt{
+					&dst.ReturnStmt{
+						Results: []dst.Expr{
+							dst.NewIdent("fmt.Sprint(" + qmp.GetAbbv() + "." + qmp.GetFieldName() + ")"),
+						},
+					},
+				},
+			},
+		}
+
+		results = []dst.Stmt{
+			conversion,
+			nilResults,
+		}
+
 	default:
-		fmt.Println("Wrong -- ", qmp.Field.Type)
-		panic("Type hasn't been implemented yet")
+		qmp.GetLogger().Error("Unknown Type", "Type", fmt.Sprint(qmp.Field.Type))
+		results = []dst.Stmt{
+			nilResults,
+		}
 	}
 
 	return results

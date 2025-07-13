@@ -1,6 +1,10 @@
 package interfaces
 
-import "github.com/dave/dst"
+import (
+	"log/slog"
+
+	"github.com/dave/dst"
+)
 
 type Standard interface {
 	GetName() string
@@ -15,6 +19,7 @@ type Struct interface {
 	// THIS IS WHERE TYOU WILL PUT FUNCITONS THAT THE DISPLAY
 	// STRUCT WILL USE
 	GetStructFields() []*dst.Field
+	GetLogger() *slog.Logger
 }
 
 type Function interface {

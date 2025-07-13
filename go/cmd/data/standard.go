@@ -1,11 +1,13 @@
 package data
 
 import (
+	"log/slog"
 	"strings"
 )
 
 type StandardData struct {
-	Name string
+	Name   string
+	Logger *slog.Logger
 }
 
 func (sd *StandardData) GetName() string {
@@ -29,4 +31,8 @@ func (sd *StandardData) GetLowerName() string {
 
 func (sd *StandardData) GetStandardStruct() *StandardData {
 	return sd
+}
+
+func (sd *StandardData) GetLogger() *slog.Logger {
+	return sd.Logger
 }
