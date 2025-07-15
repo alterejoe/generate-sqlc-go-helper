@@ -65,8 +65,8 @@ func (qmp *Gendecl_toSqlcQuery) GetIdentifier() string {
 	return "identifier"
 }
 
-func (qmp *Gendecl_toSqlcQuery) GetSelect() string {
-	return "select, columns, here"
+func (qmp *Gendecl_toSqlcQuery) GetQuery() string {
+	return "SELECT select, columns, here"
 }
 
 func (qmp *Gendecl_toSqlcQuery) GetFrom() string {

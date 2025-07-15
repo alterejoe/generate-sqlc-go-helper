@@ -62,40 +62,8 @@ func (qmp *Gendecl_toDisplayFunction) Ident(param string) *dst.Ident {
 	return dst.NewIdent(fmt.Sprint(param))
 }
 
-//
-// func (qmp *Gendecl_toDisplayFunction) PgSubparam(param string) string {
-// 	return fmt.Sprint(qmp.GetAbbv(), ".", qmp.GetFieldName(), ".", param)
-// }
-//
-// func (qmp *Gendecl_toDisplayFunction) PgSubparamIdentInt(param string) *dst.Ident {
-// 	return dst.NewIdent("int(" + qmp.PgSubparam(param) + ")")
-// }
-//
-// func (qmp *Gendecl_toDisplayFunction) PgSubparamIdent(param string) *dst.Ident {
-// 	return dst.NewIdent(qmp.PgSubparam(param))
-// }
-//
-// func (qmp *Gendecl_toDisplayFunction) PgParam() string {
-// 	return fmt.Sprint(qmp.GetAbbv(), ".", qmp.GetFieldName())
-// }
-//
-// func (qmp *Gendecl_toDisplayFunction) PgParamIdent() *dst.Ident {
-// 	return dst.NewIdent(qmp.PgParam())
-// }
-//
-// func (qmp *Gendecl_toDisplayFunction) PgParamIdent() *dst.Ident {
-// 	return dst.NewIdent(qmp.PgParam())
-// }
-
 func (qmp *Gendecl_toDisplayFunction) GetParams() []*dst.Field {
 	return []*dst.Field{}
-}
-
-func (qmp *Gendecl_toDisplayFunction) GetReturns() []*dst.Field {
-
-	return []*dst.Field{
-		qmp.Field,
-	}
 }
 
 func (qmp *Gendecl_toDisplayFunction) GetGenerateReceiver() *dst.FieldList {
@@ -208,6 +176,12 @@ func (qmp *Gendecl_toDisplayFunction) GetGenerateResults() *dst.FieldList {
 				{Type: dst.NewIdent("[]bool")},
 			},
 		}
+	case "&{pgtype UUID {{None [] [] None} []}}":
+		return &dst.FieldList{
+			List: []*dst.Field{
+				{Type: dst.NewIdent("uuid.UUID")},
+			},
+		}
 	default:
 		fmt.Println("Wrong type", qmp.Field.Type)
 		return nil
@@ -288,13 +262,12 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversionReturn() *dst.ReturnStmt 
 				qmp.ParamIdent("[]bool{}"),
 			},
 		}
-	// case "&{<nil> string {{None [] [] None} [] []}}":
-	// 	return &dst.ReturnStmt{
-	// 		Results: []dst.Expr{
-	// 			qmp.ParamIdent("[]string{}"),
-	// 		},
-	// 	}
-	//
+	case "&{pgtype UUID {{None [] [] None} []}}":
+		return &dst.ReturnStmt{
+			Results: []dst.Expr{
+				qmp.ParamIdent("uuid.UUID{}"),
+			},
+		}
 	default:
 		fmt.Println("GetTypeConversionReturn: Type not found: ", qmp.Field.Type)
 		return &dst.ReturnStmt{
@@ -507,7 +480,25 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 			conversion,
 			nilResults,
 		}
+	case "&{pgtype UUID {{None [] [] None} []}}":
+		conversion = &dst.IfStmt{
+			Cond: qmp.Ident(qmp.PreidentPgsubparam("Valid")),
+			Body: &dst.BlockStmt{
+				List: []dst.Stmt{
+					&dst.ReturnStmt{
+						Results: []dst.Expr{
+							// qmp.PgSubparamIdent("UUID"),
+							qmp.Ident(qmp.PreidentPgsubparam("Bytes")),
+						},
+					},
+				},
+			},
+		}
 
+		results = []dst.Stmt{
+			conversion,
+			nilResults,
+		}
 	default:
 		fmt.Println("Wrong -- ", qmp.Field.Type)
 		panic("Type hasn't been implemented yet")

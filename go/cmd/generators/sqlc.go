@@ -6,11 +6,11 @@ import (
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/interfaces"
 )
 
-func SqlcSelectGenerate(f interfaces.DisplaySqlc) string {
+func SqlcSelectGenerate(f interfaces.Sqlc) string {
 	meta := fmt.Sprintf("-- name: %s%s %s\n", f.GetName(), f.GetIdentifier(), f.GetReturns())
-	return fmt.Sprintf("%sSELECT %s FROM %s %s %s %s;",
+	return fmt.Sprintf("%s%s FROM %s %s %s %s;",
 		meta,
-		f.GetSelect(),
+		f.GetQuery(),
 		f.GetFrom(),
 		f.GetWhere(),
 		f.GetOrderBy(),

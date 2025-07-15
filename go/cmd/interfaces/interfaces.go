@@ -10,6 +10,7 @@ type Standard interface {
 	GetName() string
 	GetLowerName() string
 	GetAbbv() string
+	GetLogger() *slog.Logger
 }
 
 // these will be duplicated from the origin Node
@@ -19,7 +20,6 @@ type Struct interface {
 	// THIS IS WHERE TYOU WILL PUT FUNCITONS THAT THE DISPLAY
 	// STRUCT WILL USE
 	GetStructFields() []*dst.Field
-	GetLogger() *slog.Logger
 }
 
 type Function interface {
@@ -27,7 +27,6 @@ type Function interface {
 	// THIS IS WHERE TYOU WILL PUT FUNCITONS THAT THE DISPLAY
 	// FUNCTION WILL USE
 	GetParams() []*dst.Field
-	GetReturns() []*dst.Field
 }
 
 type DisplayStruct interface {
@@ -44,9 +43,9 @@ type DisplayFunction interface {
 	GetBody() *dst.BlockStmt
 }
 
-type SqlcSelect interface {
+type Sqlc interface {
 	Standard
-	GetSelect() string
+	GetQuery() string
 	GetIdentifier() string
 	GetFrom() string
 	GetWhere() string

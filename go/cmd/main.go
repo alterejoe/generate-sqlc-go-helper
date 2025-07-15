@@ -86,6 +86,7 @@ func main() {
 	model_df_imports := []string{
 		"fmt",
 		"time",
+		"github.com/google/uuid",
 	}
 	model_df_file := dst.File{
 		Name:  dst.NewIdent("db"),
