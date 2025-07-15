@@ -85,3 +85,13 @@ func addImports(file *dst.File, imports []string) {
 		file.Decls = append([]dst.Decl{importDecl}, file.Decls...)
 	}
 }
+
+func CheckGenText(t dst.Expr) bool {
+	// switch v := fmt.Sprintf(t.Type), v {
+	switch v := fmt.Sprintf("%s", t); v {
+	case "&{pgtype Text {{None [] [] None} []}}", "string", "&{<nil> bool {{None [] [] None} [] []}}", "&{<nil> string {{None [] [] None} [] []}}":
+		return false
+	default:
+		return true
+	}
+}

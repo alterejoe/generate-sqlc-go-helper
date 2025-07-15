@@ -8,18 +8,9 @@ import (
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/data"
 	dstto "github.com/alterejoe/generate/sqlc-go-helper/cmd/dst-to"
 	"github.com/alterejoe/generate/sqlc-go-helper/cmd/generators"
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/helper"
 	"github.com/dave/dst"
 )
-
-func GenText(t dst.Expr) bool {
-	// switch v := fmt.Sprintf(t.Type), v {
-	switch v := fmt.Sprintf("%s", t); v {
-	case "&{pgtype Text {{None [] [] None} []}}", "string", "&{<nil> bool {{None [] [] None} [] []}}", "&{<nil> string {{None [] [] None} [] []}}":
-		return false
-	default:
-		return true
-	}
-}
 
 func ParseModels(n dst.Node, logger *slog.Logger) []dst.Decl {
 	switch v := n.(type) {
@@ -54,7 +45,7 @@ func ParseModels(n dst.Node, logger *slog.Logger) []dst.Decl {
 				funcgen := generators.FunctionGenerate(funcdata)
 				decls = append(decls, funcgen)
 			}
-			if GenText(f.Type) {
+			if helper.CheckGenText(f.Type) {
 				if fd := data.GenToDisplayTextFunction(props); fd != nil {
 					f := generators.FunctionGenerate(fd)
 					decls = append(decls, f)

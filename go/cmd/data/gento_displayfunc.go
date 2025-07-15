@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/helper"
 	"github.com/dave/dst"
 )
 
@@ -84,203 +85,18 @@ func (qmp *Gendecl_toDisplayFunction) GetGenerateFunctionParams() *dst.FieldList
 }
 
 func (qmp *Gendecl_toDisplayFunction) GetGenerateResults() *dst.FieldList {
-	switch fmt.Sprint(qmp.Field.Type) {
-	case "string":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("string")},
-			},
-		}
-	case "int64":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("int")},
-			},
-		}
-	case "int32":
-
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("int")},
-			},
-		}
-	case "bool":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("bool")},
-			},
-		}
-	case "&{pgtype Bool {{None [] [] None} []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("bool")},
-			},
-		}
-	case "&{pgtype Int4 {{None [] [] None} []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("int")},
-			},
-		}
-	case "&{pgtype Float8 {{None [] [] None} []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("float64")},
-			},
-		}
-	case "&{pgtype Text {{None [] [] None} []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("string")},
-			},
-		}
-	case "&{pgtype Timestamp {{None [] [] None} []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("time.Time")},
-			},
-		}
-	case "&{pgtype Timestamptz {{None [] [] None} []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("time.Time")},
-			},
-		}
-	case "&{<nil> byte {{None [] [] None} [] []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("[]byte")},
-			},
-		}
-	case "&{<nil> string {{None [] [] None} [] []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("[]string")},
-			},
-		}
-	case "&{<nil> float64 {{None [] [] None} [] []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("[]float64")},
-			},
-		}
-	case "&{<nil> int32 {{None [] [] None} [] []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("[]int")},
-			},
-		}
-	case "&{<nil> bool {{None [] [] None} [] []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("[]bool")},
-			},
-		}
-	case "&{pgtype UUID {{None [] [] None} []}}":
-		return &dst.FieldList{
-			List: []*dst.Field{
-				{Type: dst.NewIdent("uuid.UUID")},
-			},
-		}
-	default:
-		fmt.Println("Wrong type", qmp.Field.Type)
-		return nil
+	return &dst.FieldList{
+		List: []*dst.Field{
+			{Type: dst.NewIdent(helper.ToStandardReturnType(&qmp.Field.Type))},
+		},
 	}
 }
 
 func (qmp *Gendecl_toDisplayFunction) GetTypeConversionReturn() *dst.ReturnStmt {
-	switch fmt.Sprint(qmp.Field.Type) {
-	case "string", "int64", "int32", "bool":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.Field.Type,
-			},
-		}
-	case "&{pgtype Bool {{None [] [] None} []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("false"),
-			},
-		}
-	case "&{pgtype Int4 {{None [] [] None} []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("-1"),
-			},
-		}
-	case "&{pgtype Float8 {{None [] [] None} []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("-1"),
-			},
-		}
-	case "&{pgtype Text {{None [] [] None} []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("\"\""),
-			},
-		}
-	case "&{pgtype Timestamp {{None [] [] None} []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("time.Time{}"),
-			},
-		}
-	case "&{pgtype Timestamptz {{None [] [] None} []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("time.Time{}"),
-			},
-		}
-	case "&{<nil> byte {{None [] [] None} [] []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("[]byte{}"),
-			},
-		}
-	case "&{<nil> string {{None [] [] None} [] []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("[]string{}"),
-			},
-		}
-	case "&{<nil> float64 {{None [] [] None} [] []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("[]float64{}"),
-			},
-		}
-	case "&{<nil> int32 {{None [] [] None} [] []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("[]int{}"),
-			},
-		}
-	case "&{<nil> bool {{None [] [] None} [] []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("[]bool{}"),
-			},
-		}
-	case "&{pgtype UUID {{None [] [] None} []}}":
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("uuid.UUID{}"),
-			},
-		}
-	default:
-		fmt.Println("GetTypeConversionReturn: Type not found: ", qmp.Field.Type)
-		return &dst.ReturnStmt{
-			Results: []dst.Expr{
-				qmp.ParamIdent("\"\""),
-			},
-		}
-		// default:
-		// 	return &dst.ReturnStmt{
-		// 		Results: []dst.Expr{
-		// 			qmp.Field.Type,
-		// 		},
-		// 	}
+	return &dst.ReturnStmt{
+		Results: []dst.Expr{
+			helper.ToStandardReturn(&qmp.Field.Type),
+		},
 	}
 }
 

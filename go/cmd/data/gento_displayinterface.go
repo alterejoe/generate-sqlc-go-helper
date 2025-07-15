@@ -3,6 +3,7 @@ package data
 import (
 	"log/slog"
 
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/helper"
 	"github.com/dave/dst"
 )
 
@@ -19,8 +20,9 @@ type GenToDisplayInterfaceProps struct {
 
 func GenToDisplayInterface(props *GenToDisplayInterfaceProps) *Gendecl_toDisplayInterface {
 	fd_ts := &Gendecl_toDisplayInterface{
-		Gendecl:  props.Gendecl,
-		TypeSpec: props.TypeSpec,
+		Gendecl:    props.Gendecl,
+		TypeSpec:   props.TypeSpec,
+		StructSpec: props.StructSpec,
 		StandardData: &StandardData{
 			Name:   props.Name,
 			Logger: props.Logger,
@@ -40,6 +42,53 @@ func (gdtdi *Gendecl_toDisplayInterface) GetStructFields() []*dst.Field {
 	return gdtdi.StructSpec.Fields.List
 }
 
+func (gdtdi *Gendecl_toDisplayInterface) GetFuncitonFields() []*dst.Field {
+	var fields []*dst.Field
+	for _, v := range gdtdi.GetStructFields() {
+		// gdtdi.GetLogger().Info("GetFuncitonFields", slog.Int("index", i), slog.String("value", ))
+		if len(v.Names) == 0 {
+			continue
+		}
+		t := &dst.Field{
+			Names: []*dst.Ident{dst.NewIdent("Get" + v.Names[0].Name)},
+			Type: &dst.FuncType{
+				Params: &dst.FieldList{}, // no params
+				Results: &dst.FieldList{
+					List: []*dst.Field{
+						{
+							Type: dst.NewIdent(helper.ToStandardReturnType(&v.Type)),
+						},
+					},
+				},
+			},
+		}
+		fields = append(fields, t)
+		if helper.CheckGenText(v.Type) {
+			ttext := &dst.Field{
+				Names: []*dst.Ident{dst.NewIdent("Get" + v.Names[0].Name + "Text")},
+				Type: &dst.FuncType{
+					Params: &dst.FieldList{}, // no params
+					Results: &dst.FieldList{
+						List: []*dst.Field{{
+							Type: dst.NewIdent("string"),
+						}},
+					},
+				},
+			}
+			fields = append(fields, ttext)
+		}
+	}
+	return fields
+}
+
 func (gdtdi *Gendecl_toDisplayInterface) GetTypeSpec() *dst.TypeSpec {
-	return gdtdi.TypeSpec
+	// return gdtdi.TypeSpec
+	return &dst.TypeSpec{
+		Name: dst.NewIdent(gdtdi.GetName()),
+		Type: &dst.InterfaceType{
+			Methods: &dst.FieldList{
+				List: gdtdi.GetFuncitonFields(),
+			},
+		},
+	}
 }

@@ -46,14 +46,17 @@ func main() {
 	var querys_displayfunctions []dst.Decl
 	var model_displayfunctions []dst.Decl
 	var sqlc_queryies []string
+	var model_displayinterfaces []dst.Decl
 
 	_ = filepath.WalkDir(paths.Dir, func(path string, d fs.DirEntry, err error) error {
 
 		if strings.HasSuffix(path, "models.go") {
 			m := runner(path, logger, parse.ParseModels)
 			s := strRunner(path, logger, parse.ParseModelsSqlc)
+			i := runner(path, logger, parse.ParseInterfaces)
 			model_displayfunctions = append(model_displayfunctions, m...)
 			sqlc_queryies = append(sqlc_queryies, s...)
+			model_displayinterfaces = append(model_displayinterfaces, i...)
 		} else if strings.HasSuffix(path, ".sql.go") {
 			qm := runner(path, logger, parse.ParseModels)
 			querys_displayfunctions = append(querys_displayfunctions, qm...)
@@ -98,18 +101,23 @@ func main() {
 		Decls: querys_displayfunctions,
 	}
 
-	// sqlc_queryies_file := dst.File{
-	// 	Name:  dst.NewIdent("queries"),
-	// 	Decls: sqlc_queryies,
-	// }
+	model_interface_imports := []string{
+		"github.com/google/uuid",
+		"time",
+	}
+	model_interface_file := dst.File{
+		Name:  dst.NewIdent("interfaces"),
+		Decls: model_displayinterfaces,
+	}
 
 	addImports(&db_queries_file, db_imports)
 	addImports(&model_df_file, model_df_imports)
 	addImports(&query_df_file, model_df_imports)
-	// addImports(&sqlc_queryies_file, model_df_imports)
+	addImports(&model_interface_file, model_interface_imports)
 	writeToFile(&db_queries_file, "../../../budget/web-budget/web/internal/queries/generated.go")
 	writeToFile(&query_df_file, "../../../budget/web-budget/web/db/generated-queries.go")
 	writeToFile(&model_df_file, "../../../budget/web-budget/web/db/generated-models.go")
+	writeToFile(&model_interface_file, "../../../budget/web-budget/web/interfaces/generated.go")
 	// writeToFile(&sqlc_queryies_file, "../../../budget/web-budget/web/internal/sqlc/generated.go")
 	// writeToFile(&dst.File{Name: dst.NewIdent("models"), Decls: models}, "models.go")
 }

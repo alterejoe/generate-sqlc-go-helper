@@ -38,9 +38,9 @@ func ParseInterfaces(n dst.Node, logger *slog.Logger) []dst.Decl {
 			StructSpec: st,
 			Logger:     logger,
 		}
-		if structdata := data.GenToDisplayInterface(&props); structdata != nil {
-			structgen := generators.StructGenerate(structdata)
-			decls = append(decls, structgen)
+		if interfacedata := data.GenToDisplayInterface(&props); interfacedata != nil {
+			interfacegen := generators.InterfaceGenerate(interfacedata)
+			decls = append(decls, interfacegen)
 		}
 		return decls
 	default:
