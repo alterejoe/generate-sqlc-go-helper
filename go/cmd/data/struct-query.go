@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/alterejoe/generate/sqlc-go-helper/cmd/helper"
 	"github.com/dave/dst"
 )
 
@@ -51,7 +52,7 @@ func (sqqs *Funcdecl_toQueryStruct) GetStructFields() []*dst.Field {
 			return []*dst.Field{
 				{
 					Names: second.Names,
-					Type:  dst.NewIdent(fmt.Sprint(second.Type)),
+					Type:  dst.NewIdent(helper.ToPgtype(&second.Type)),
 				},
 			}
 		}

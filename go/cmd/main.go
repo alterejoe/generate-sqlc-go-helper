@@ -64,6 +64,8 @@ func main() {
 		if strings.HasSuffix(path, ".sql.go") {
 			q := runner(path, logger, parse.ParseQueries)
 			// will need to parse structs related to queries as well
+			i := runner(path, logger, parse.ParseInterfaces)
+			model_displayinterfaces = append(model_displayinterfaces, i...)
 			// for display purposes
 			// each struct ex: GerFirstAccountRow related to a query
 			// need the display functions to be attached not just the original models.go
@@ -81,6 +83,7 @@ func main() {
 	db_imports := []string{
 		"context",
 		"github.com/alterejoe/budget/db",
+		"github.com/jackc/pgx/v5/pgtype",
 	}
 	db_queries_file := dst.File{
 		Name:  dst.NewIdent("queries"),

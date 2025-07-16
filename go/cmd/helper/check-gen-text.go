@@ -33,7 +33,7 @@ func ToStandardReturnType(t *dst.Expr) string {
 	case "&{<nil> string {{None [] [] None} [] []}}":
 		return "[]string"
 	case "&{<nil> float64 {{None [] [] None} [] []}}":
-		return "[]float"
+		return "[]float64"
 	case "&{<nil> int32 {{None [] [] None} [] []}}":
 		return "[]int"
 	case "&{<nil> bool {{None [] [] None} [] []}}":
@@ -59,9 +59,9 @@ func ToStandardReturn(t *dst.Expr) dst.Expr {
 	case "&{<nil> byte {{None [] [] None} [] []}}":
 		return dst.NewIdent("[]byte{}")
 	case "&{<nil> string {{None [] [] None} [] []}}":
-		return dst.NewIdent("[]string")
+		return dst.NewIdent("[]string{}")
 	case "&{<nil> float64 {{None [] [] None} [] []}}":
-		return dst.NewIdent("[]float{}")
+		return dst.NewIdent("[]float64{}")
 	case "&{<nil> int32 {{None [] [] None} [] []}}":
 		return dst.NewIdent("[]int{}")
 	case "&{<nil> bool {{None [] [] None} [] []}}":
@@ -73,5 +73,39 @@ func ToStandardReturn(t *dst.Expr) dst.Expr {
 	default:
 		fmt.Println("Unknown return", *t)
 		return dst.NewIdent("\"\"")
+	}
+}
+
+func ToPgtype(t *dst.Expr) string {
+	switch fmt.Sprint(*t) {
+	case "string", "int64", "int32", "bool":
+		return fmt.Sprint(*t)
+	case "&{pgtype Bool {{None [] [] None} []}}":
+		return "pgtype.Bool"
+	case "&{pgtype Int4 {{None [] [] None} []}}":
+		return "pgtype.Int4"
+	case "&{pgtype Float8 {{None [] [] None} []}}":
+		return "pgtype.Float8"
+	case "&{pgtype Timestamp {{None [] [] None} []}}":
+		return "pgtype.Timestamp"
+	case "&{pgtype Timestamptz {{None [] [] None} []}}":
+		return "pgtype.Timestamptz"
+	case "&{<nil> byte {{None [] [] None} [] []}}":
+		return "[]byte{}"
+	case "&{<nil> string {{None [] [] None} [] []}}":
+		return "[]string{}"
+	case "&{<nil> float64 {{None [] [] None} [] []}}":
+		return "[]float64{}"
+	case "&{<nil> int32 {{None [] [] None} [] []}}":
+		return "[]int{}"
+	case "&{<nil> bool {{None [] [] None} [] []}}":
+		return "[]bool{}"
+	case "&{pgtype UUID {{None [] [] None} []}}":
+		return "uuid.UUID{}"
+	case "&{pgtype Text {{None [] [] None} []}}":
+		return "pgtype.Text"
+	default:
+		fmt.Println("Unknown pgtype", *t)
+		return "UNKNOWN PGTYPE"
 	}
 }
