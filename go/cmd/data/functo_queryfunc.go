@@ -129,9 +129,11 @@ func (qmp *Funcdecl_toQueryFunction) GetQueryArgs() []dst.Expr {
 				dst.NewIdent(fmt.Sprint(qmp.GetAbbv(), ".Params")),
 			}
 		} else {
+
+			propercasename := strings.Title(secondarg.Names[0].Name)
 			return []dst.Expr{
 				dst.NewIdent("r"),
-				dst.NewIdent(fmt.Sprint(qmp.GetAbbv(), ".", secondarg.Names[0].Name)),
+				dst.NewIdent(fmt.Sprint(qmp.GetAbbv(), ".", propercasename)),
 			}
 		}
 	default:

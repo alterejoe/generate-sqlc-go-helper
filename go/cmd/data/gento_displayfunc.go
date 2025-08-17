@@ -315,6 +315,25 @@ func (qmp *Gendecl_toDisplayFunction) GetTypeConversion() []dst.Stmt {
 			conversion,
 			nilResults,
 		}
+	case "&{pgtype Date {{None [] [] None} []}}":
+		conversion = &dst.IfStmt{
+			Cond: qmp.Ident(qmp.PreidentPgsubparam("Valid")),
+			Body: &dst.BlockStmt{
+				List: []dst.Stmt{
+					&dst.ReturnStmt{
+						Results: []dst.Expr{
+							// qmp.PgSubparamIdent("Time"),
+							qmp.Ident(qmp.PreidentPgsubparam("Time")),
+						},
+					},
+				},
+			},
+		}
+
+		results = []dst.Stmt{
+			conversion,
+			nilResults,
+		}
 	default:
 		fmt.Println("Wrong -- ", qmp.Field.Type)
 		panic("Type hasn't been implemented yet")

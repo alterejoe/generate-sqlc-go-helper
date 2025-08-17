@@ -38,8 +38,10 @@ func main() {
 	logger := slog.New(handler)
 
 	godotenv.Load()
+	writeto := os.Getenv("WRITETO")
+	sqlcdir := writeto + "/db/"
 	paths := Paths{
-		Dir: os.Getenv("SQLCDIR"),
+		Dir: sqlcdir,
 	}
 
 	var dbqueries []dst.Decl
@@ -82,8 +84,8 @@ func main() {
 	//
 	db_imports := []string{
 		"context",
-		"github.com/alterejoe/budget/db",
-		"github.com/jackc/pgx/v5/pgtype",
+		fmt.Sprint("github.com/alterejoe/", os.Getenv("PROJECT"), "/web/db"),
+		// "github.com/alterejoe/order/db",
 	}
 	db_queries_file := dst.File{
 		Name:  dst.NewIdent("queries"),
@@ -117,10 +119,24 @@ func main() {
 	addImports(&model_df_file, model_df_imports)
 	addImports(&query_df_file, model_df_imports)
 	addImports(&model_interface_file, model_interface_imports)
-	writeToFile(&db_queries_file, "../../../budget/web-budget/web/internal/queries/generated.go")
-	writeToFile(&query_df_file, "../../../budget/web-budget/web/db/generated-queries.go")
-	writeToFile(&model_df_file, "../../../budget/web-budget/web/db/generated-models.go")
-	writeToFile(&model_interface_file, "../../../budget/web-budget/web/interfaces/generated.go")
-	// writeToFile(&sqlc_queryies_file, "../../../budget/web-budget/web/internal/sqlc/generated.go")
-	// writeToFile(&dst.File{Name: dst.NewIdent("models"), Decls: models}, "models.go")
+
+	/*this is the operation of the query as it relates to the Query interface
+	  type DatabaseQueryParams interface {
+	  	Query(query *model.Queries, r context.Context) (any, error)
+	  	GetParams() any
+	  }*/
+	writeToFile(&db_queries_file, fmt.Sprint(writeto, "/internal/queries/generated.go"))
+
+	/*This is to generate the parameter and text parameter functions to add onto sqlc generated models.
+	This will make it easier to get the data after database fetch.
+	*/
+	writeToFile(&model_df_file, fmt.Sprint(writeto, "/db/generated-queries.go"))
+
+	/*not sure what this is needed to do*/
+	// writeToFile(&query_df_file, fmt.Sprint(writeto, "/db/generated-models.go"))
+
+	/*This generates the interfaces for each model and param/text param functions.
+	This makes it easier to get the data transfered from the endpoint (database fetch) to the html template.
+	*/
+	writeToFile(&model_interface_file, fmt.Sprint(writeto, "/interfaces/generated.go"))
 }

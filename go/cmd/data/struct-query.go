@@ -49,9 +49,10 @@ func (sqqs *Funcdecl_toQueryStruct) GetStructFields() []*dst.Field {
 				},
 			}
 		} else {
+			propercasename := strings.Title(second.Names[0].Name)
 			return []*dst.Field{
 				{
-					Names: second.Names,
+					Names: []*dst.Ident{dst.NewIdent(propercasename)},
 					Type:  dst.NewIdent(helper.ToPgtype(&second.Type)),
 				},
 			}

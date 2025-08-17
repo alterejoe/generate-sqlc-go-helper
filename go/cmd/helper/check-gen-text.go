@@ -40,6 +40,8 @@ func ToStandardReturnType(t *dst.Expr) string {
 		return "[]bool"
 	case "&{pgtype UUID {{None [] [] None} []}}":
 		return "uuid.UUID"
+	case "&{pgtype Date {{None [] [] None} []}}":
+		return "time.Time"
 	default:
 		fmt.Println("Unknown return type", *t)
 		return "NOTHING"
@@ -70,6 +72,8 @@ func ToStandardReturn(t *dst.Expr) dst.Expr {
 		return dst.NewIdent("uuid.UUID{}")
 	case "&{pgtype Text {{None [] [] None} []}}":
 		return dst.NewIdent("\"\"")
+	case "&{pgtype Date {{None [] [] None} []}}":
+		return dst.NewIdent("time.Time{}")
 	default:
 		fmt.Println("Unknown return", *t)
 		return dst.NewIdent("\"\"")
