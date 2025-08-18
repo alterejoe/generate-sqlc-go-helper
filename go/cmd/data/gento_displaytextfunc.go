@@ -270,6 +270,24 @@ func (qmp *Gendecl_toDisplayTextFunction) GetTypeConversion() []dst.Stmt {
 			conversion,
 			nilResults,
 		}
+	case "&{pgtype Date {{None [] [] None} []}}":
+		conversion = &dst.IfStmt{
+			Cond: qmp.StandardPgIdent("Valid"),
+			Body: &dst.BlockStmt{
+				List: []dst.Stmt{
+					&dst.ReturnStmt{
+						Results: []dst.Expr{
+							qmp.StandardPgPrintIdent("Time"),
+						},
+					},
+				},
+			},
+		}
+
+		results = []dst.Stmt{
+			conversion,
+			nilResults,
+		}
 	default:
 		qmp.GetLogger().Error("Unknown Type", "Type", fmt.Sprint(qmp.Field.Type))
 		results = []dst.Stmt{
