@@ -105,7 +105,7 @@ func ToPgtype(t *dst.Expr) string {
 	case "&{<nil> bool {{None [] [] None} [] []}}":
 		return "[]bool{}"
 	case "&{pgtype UUID {{None [] [] None} []}}":
-		return "uuid.UUID{}"
+		return "pgtype.UUID"
 	case "&{pgtype Text {{None [] [] None} []}}":
 		return "pgtype.Text"
 	default:
