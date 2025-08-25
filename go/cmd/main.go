@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/alterejoe/generate/sqlc-go-helper/cmd/parse"
+	"github.com/alterejoe/generate/sqlc-go-helper/go/cmd/parse"
 	"github.com/dave/dst"
 	"github.com/golang-cz/devslog"
 	"github.com/joho/godotenv"

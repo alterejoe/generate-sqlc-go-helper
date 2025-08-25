@@ -4,13 +4,19 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
 
 type Env struct {
-	DbProjectPath          string
-	DbProjectUrl           string
+	DbProjectPathIn string
+	DbProjectUrlIn  string
+
+	DbModulePathOut    string
+	DbModuleNameOut    string
+	DbModuleImportsOut []string
+
 	DbQueryParamOut        string
 	DbInterfaceAdaptersOut string
 	DbInterfacesOut        string
@@ -31,9 +37,16 @@ func GetEnv() Env {
 		panic(err)
 	}
 
+	imports := strings.Split(os.Getenv("OUT_DB_MODULE_IMPORTS"), ",")
+
 	cfg := Env{
-		DbProjectPath:          os.Getenv("IN_DB_PROJECT_PATH"),
-		DbProjectUrl:           os.Getenv("IN_DB_PROJECT_URL"),
+		DbProjectPathIn: os.Getenv("IN_DB_PROJECT_PATH"),
+		DbProjectUrlIn:  os.Getenv("IN_DB_PROJECT_URL"),
+
+		DbModulePathOut:    os.Getenv("OUT_DB_MODULE_PATH"),
+		DbModuleNameOut:    os.Getenv("OUT_DB_MODULE_NAME"),
+		DbModuleImportsOut: imports,
+
 		DbQueryParamOut:        os.Getenv("OUT_DB_QUERY_PARAM_OUT"),
 		DbInterfaceAdaptersOut: os.Getenv("OUT_DB_INTERFACE_ADAPTERS_OUT"),
 		DbInterfacesOut:        os.Getenv("OUT_DB_INTERFACES_OUT"),

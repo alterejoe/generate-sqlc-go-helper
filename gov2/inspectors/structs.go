@@ -7,12 +7,12 @@ import (
 	"github.com/dave/dst"
 )
 
-type Params struct {
+type StructParams struct {
 	StructName string
-	Fields     map[string]dst.Expr
+	FieldList  *dst.FieldList
 }
 
-func Struct(n dst.Node, d deps.Deps, output func(Params, deps.Deps) []dst.Decl) []dst.Decl {
+func Struct(n dst.Node, d deps.Deps, output func(StructParams, deps.Deps) []dst.Decl) []dst.Decl {
 	switch v := n.(type) {
 	// this is a struct
 	case *dst.GenDecl:
@@ -34,18 +34,9 @@ func Struct(n dst.Node, d deps.Deps, output func(Params, deps.Deps) []dst.Decl) 
 			return []dst.Decl{}
 		}
 
-		fields := make(map[string]dst.Expr)
-		if len(st.Fields.List) > 0 {
-			for _, field := range st.Fields.List {
-				if len(field.Names) > 0 {
-					fields[field.Names[0].Name] = field.Type
-				}
-			}
-		}
-
-		params := Params{
+		params := StructParams{
 			StructName: ts.Name.Name,
-			Fields:     fields,
+			FieldList:  st.Fields,
 		}
 
 		// d.Logger.Info("found struct", "name", ts.Name.Name, "params", params)

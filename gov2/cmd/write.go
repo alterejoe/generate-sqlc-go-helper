@@ -12,6 +12,7 @@ import (
 
 type WriteFile struct {
 	Imports     []string
+	Interface   string
 	FileName    string
 	PackageName string
 	Out         []dst.Decl
@@ -19,7 +20,7 @@ type WriteFile struct {
 
 func writeToFile(wf WriteFile) {
 	file := dst.File{
-		Name:  dst.NewIdent("interfaces"),
+		Name:  dst.NewIdent(wf.Interface),
 		Decls: wf.Out,
 	}
 

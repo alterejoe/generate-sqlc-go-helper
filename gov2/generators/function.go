@@ -13,14 +13,14 @@ import (
 // Type *FuncType  // function signature: type and value parameters, results, and position of "func" keyword
 // Body *BlockStmt // function body; or nil for external (non-Go) function
 // Decs FuncDeclDecorations
-func Function(p inspectors.Params, deps deps.Deps) []dst.Decl {
+func Function(p inspectors.StructParams, deps deps.Deps) []dst.Decl {
 	var funcs []dst.Decl
-	for key := range p.Fields {
+	for key := range p.FieldList.List {
 		funcdecl := &dst.FuncDecl{
 			Recv: &dst.FieldList{
 				List: []*dst.Field{
 					{
-						Names: []*dst.Ident{dst.NewIdent("db")},
+						Names: []*dst.Ident{dst.NewIdent(deps.Environment.DbModuleNameOut)},
 						Type:  &dst.Ident{Name: "DBAdapter"}, // <-- you must define what db is
 					},
 				},
@@ -30,7 +30,7 @@ func Function(p inspectors.Params, deps deps.Deps) []dst.Decl {
 				Params: &dst.FieldList{
 					List: []*dst.Field{
 						{
-							Names: []*dst.Ident{dst.NewIdent("db")},
+							Names: []*dst.Ident{dst.NewIdent(deps.Environment.DbModuleNameOut)},
 							Type:  &dst.Ident{Name: "string"}, // example type
 						},
 					},
