@@ -1,4 +1,4 @@
-module github.com/alterejoe/generate/sqlc-go-helper
+module github.com/alterejoe/generate/sqlc-go-helper/go
 
 go 1.23.4
 

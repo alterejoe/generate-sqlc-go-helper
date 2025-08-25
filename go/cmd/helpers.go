@@ -51,7 +51,7 @@ func strRunner(path string, logger *slog.Logger, inspector func(dst.Node, *slog.
 	return decls
 }
 
-func runner(path string, logger *slog.Logger, inspector func(dst.Node, *slog.Logger) []dst.Decl) []dst.Decl {
+func dst_inspect_file(path string, logger *slog.Logger, inspector func(dst.Node, *slog.Logger) []dst.Decl) []dst.Decl {
 	fset := token.NewFileSet()
 	f, err := decorator.ParseFile(fset, path, nil, parser.AllErrors)
 	if err != nil {
