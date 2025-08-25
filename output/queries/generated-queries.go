@@ -1,8 +1,11 @@
 package sqlcqueries
 
-import "github.com/jackc/pgx/v5/pgtype"
-import "github.com/alterejoe/generate/sqlc-go-helper/gov2/db"
-import "context"
+import (
+	"context"
+
+	"github.com/alterejoe/generate/sqlc-go-helper/gov2/db"
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 type SelectAllEmbroideryCustomers struct {
 }
