@@ -1,0 +1,13 @@
+IN_DB_PROJECT_URL=github.com/alterejoe/danny/web/db
+IN_DB_PROJECT_PATH=/home/altjoe/projects/danny/web/db
+
+OUT_DB_MODULE_PATH=github.com/alterejoe/generate/sqlc-go-helper/gov2/db
+OUT_DB_MODULE_NAME=db
+
+OUT_DB_QUERY_PARAM_OUT=../output/queries/generated-queries.go
+OUT_DB_INTERFACE_ADAPTERS_OUT=../output/adapters/generated-database-query-param-adapters.go
+OUT_DB_INTERFACES_OUT=../output/interfaces/generated-interfaces.go
+
+OUT_DB_MODULE_IMPORTS=github.com/jackc/pgx/v5/pgtype
+
+
