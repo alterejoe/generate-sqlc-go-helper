@@ -37,7 +37,11 @@ func GetEnv() Env {
 		panic(err)
 	}
 
-	imports := strings.Split(os.Getenv("OUT_DB_MODULE_IMPORTS"), ",")
+	var imports []string
+	i := os.Getenv("OUT_DB_MODULE_IMPORTS")
+	if i != "" {
+		imports = strings.Split(os.Getenv("OUT_DB_MODULE_IMPORTS"), ",")
+	}
 
 	cfg := Env{
 		DbProjectPathIn: os.Getenv("IN_DB_PROJECT_PATH"),

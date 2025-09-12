@@ -45,6 +45,7 @@ func writeToFile(wf WriteFile) {
 	if err := cmd.Run(); err != nil {
 		fmt.Println("Error formatting file:", err)
 	}
+	fmt.Println("File written successfully:", wf.FileName)
 }
 
 func addImports(file *dst.File, imports []string) {
