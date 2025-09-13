@@ -9,5 +9,9 @@ func GetAbbv(name string) string {
 			capitalleters = append(capitalleters, string(char))
 		}
 	}
+	result := strings.ToLower(strings.Join(capitalleters, ""))
+	if result == "if" {
+		return "iff"
+	}
 	return strings.ToLower(strings.Join(capitalleters, ""))
 }
